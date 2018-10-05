@@ -62,8 +62,6 @@ function getMsgFilePath(index = 0) {
   // For now I'm accommodating both.
   const gitParams = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS;
 
-  console.debug(gitParams);
-
   // Throw a friendly error if the git params environment variable
   // can't be found – the user may be missing Husky.
   if (!gitParams) {
@@ -94,8 +92,15 @@ function getJiraTicket(branchName) {
   // TODO: need have able to modify pattern
   const jiraIdPattern = /([A-Z]+-\d+)/i;
   const matched = branchName.match(jiraIdPattern);
+  const jiraTicket = matched && matched[0];
 
-  return Promise.resolve(matched && matched[0]);
+  if (jiraTicket) {
+    console.log(`JIRA prepare commit msg > The JIRA ticket ID is: ${jiraTicket}`);
+  } else {
+    console.log(`JIRA prepare commit msg > The JIRA ticket ID not found`);
+  }
+
+  return Promise.resolve(jiraTicket);
 }
 
 function writeJiraTicket(jiraTicket) {
