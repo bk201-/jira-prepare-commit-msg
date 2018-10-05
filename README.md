@@ -34,6 +34,8 @@ The following patterns are currently supported:
 
 - [ ] Support user patterns
 - [ ] Support configuration (package.json)
+- [ ] Lint
+- [ ] Tests
 
 ## License
 
