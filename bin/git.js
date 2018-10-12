@@ -4,82 +4,68 @@ const fs = require('fs');
 const path = require('path');
 
 function findGitRoot() {
-  return new Promise((resolve, reject) => {
-    const cwd = process.cwd();
+  const cwd = process.cwd();
 
-    // Get directory containing .git directory or in the case of Git submodules, the .git file
-    const gitDirOrFile = findUp.sync('.git', { cwd: cwd });
+  // Get directory containing .git directory or in the case of Git submodules, the .git file
+  const gitDirOrFile = findUp.sync('.git', {cwd});
 
-    // Resolve git directory (e.g. .git/ or .git/modules/path/to/submodule)
-    const resolvedGitDir = resolveGitDir(gitDirOrFile);
+  if (gitDirOrFile === null) {
+    throw new Error(`Can't find .git, skipping Git hooks.`);
+  }
 
-    // Checks
-    if (gitDirOrFile === null) {
-      reject("Can't find .git, skipping Git hooks.");
-      return;
-    }
+  // Resolve git directory (e.g. .git/ or .git/modules/path/to/submodule)
+  const resolvedGitDir = resolveGitDir(gitDirOrFile);
 
-    if (resolvedGitDir === null) {
-      reject("Can't find resolved .git directory, skipping Git hooks.");
-      return;
-    }
+  if (resolvedGitDir === null) {
+    throw new Error(`Can't find resolved .git directory, skipping Git hooks.`);
+  }
 
-    resolve(resolvedGitDir);
-  });
+  return resolvedGitDir;
 }
 
 function resolveGitDir(gitDirOrFile) {
-  if (gitDirOrFile) {
-    const stats = fs.lstatSync(gitDirOrFile);
+  const stats = fs.lstatSync(gitDirOrFile);
 
-    // If it's a .git file resolve path
-    if (stats.isFile()) {
-      // Expect following format
-      // git: pathToGit
-      // On Windows pathToGit can contain ':' (example "gitdir: C:/Some/Path")
-      const gitFileData = fs.readFileSync(gitDirOrFile, 'utf-8');
-      const resolvedGitDir = gitFileData
-        .split(':')
-        .slice(1)
-        .join(':')
-        .trim();
-      gitDirOrFile = path.resolve(path.dirname(gitDirOrFile), resolvedGitDir);
-    }
-
-    // Else return path to .git directory
-    return gitDirOrFile;
+  // If it's a .git file resolve path
+  if (stats.isFile()) {
+    // Expect following format
+    // git: pathToGit
+    // On Windows pathToGit can contain ':' (example "gitdir: C:/Some/Path")
+    const gitFileData = fs.readFileSync(gitDirOrFile, 'utf-8');
+    const resolvedGitDir = gitFileData
+      .split(':')
+      .slice(1)
+      .join(':')
+      .trim();
+    gitDirOrFile = path.resolve(path.dirname(gitDirOrFile), resolvedGitDir);
   }
 
-  return null;
+  // Else return path to .git directory
+  return gitDirOrFile;
 }
 
-/**
- Husky stashes git hook parameters $* into a GIT_PARAMS env var.
- This method reads indexed parameters back out of that variable.
- */
 function getMsgFilePath(index = 0) {
-  // Husky 1.x namespaces GIT_PARAMS as HUSKY_GIT_PARAMS.
-  // For now I'm accommodating both.
-  const gitParams = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS;
+  // Husky stashes git hook parameters $* into a HUSKY_GIT_PARAMS (GIT_PARAMS if < 1.x) env var.
+  const gitParams = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS || '';
 
-  // Throw a friendly error if the git params environment variable
-  // can't be found – the user may be missing Husky.
+  // Throw a friendly error if the git params environment variable can't be found – the user may be missing Husky.
   if (!gitParams) {
-    throw new Error('Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?');
+    throw new Error(`Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?`);
   }
 
-  // Unfortunately this will break if there are escaped spaces within
-  // a single argument; I don't believe there's a workaround for this
-  // without modifying Husky itself
+  // Unfortunately, this will break if there are escaped spaces within a single argument;
+  // I don't believe there's a workaround for this without modifying Husky itself
   return gitParams.split(' ')[index];
 }
 
 function getBranchName(gitRoot) {
   return new Promise((resolve, reject) => {
-    childProcess.exec(`git --git-dir=${gitRoot} symbolic-ref --short HEAD`, { encoding: 'utf-8' }, (err, stdout, stderr) => {
+    childProcess.exec(`git --git-dir=${gitRoot} symbolic-ref --short HEAD`, {encoding: 'utf-8'}, (err, stdout, stderr) => {
+      if (err) {
+        return reject(err);
+      }
       if (stderr) {
-        reject(String(stderr));
-        return;
+        return reject(new Error(String(stderr)));
       }
       resolve(String(stdout).trim());
     });
@@ -87,48 +73,39 @@ function getBranchName(gitRoot) {
 }
 
 function getJiraTicket(branchName) {
-  //const jiraIdPattern = /^(?:feature|bugfix|hotfix|release)\/([A-Z]+-\d+)-.+/i;
-
-  // TODO: need have able to modify pattern
   const jiraIdPattern = /([A-Z]+-\d+)/i;
   const matched = branchName.match(jiraIdPattern);
   const jiraTicket = matched && matched[0];
 
-  if (jiraTicket) {
-    console.log(`JIRA prepare commit msg > The JIRA ticket ID is: ${jiraTicket}`);
-  } else {
-    console.log(`JIRA prepare commit msg > The JIRA ticket ID not found`);
+  if (!jiraTicket) {
+    throw new Error(`The JIRA ticket ID not found`);
   }
 
-  return Promise.resolve(jiraTicket);
+  return jiraTicket;
 }
 
 function writeJiraTicket(jiraTicket) {
-  if (jiraTicket) {
-    const messageFilePath = getMsgFilePath();
-    let message;
+  const messageFilePath = getMsgFilePath();
+  let message;
 
-    // Read file with commit message
-    try {
-      message = fs.readFileSync(messageFilePath, { encoding: 'utf-8' });
-    } catch (ex) {
-      return Promise.reject(`Unable to read the file "${messageFilePath}".`);
-    }
-
-    // Add jira ticket to message if it is missed
-    if (message.indexOf(jiraTicket) < 0) {
-      message = `[${jiraTicket}]\n${message}`;
-    }
-
-    // Write message back to file
-    try {
-      fs.writeFileSync(messageFilePath, message, {encoding: 'utf-8'});
-    } catch (ex) {
-      return Promise.reject(`Unable to write the file "${messageFilePath}".`);
-    }
+  // Read file with commit message
+  try {
+    message = fs.readFileSync(messageFilePath, {encoding: 'utf-8'});
+  } catch (ex) {
+    throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
 
-  return Promise.resolve();
+  // Add jira ticket into the message in case of missing
+  if (message.indexOf(jiraTicket) < 0) {
+    message = `[${jiraTicket}]\n${message}`;
+  }
+
+  // Write message back to file
+  try {
+    fs.writeFileSync(messageFilePath, message, {encoding: 'utf-8'});
+  } catch (ex) {
+    throw new Error(`Unable to write the file "${messageFilePath}".`);
+  }
 }
 
 module.exports = {

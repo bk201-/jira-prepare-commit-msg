@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
-console.log('JIRA prepare commit msg > start');
-
 const git = require('./git');
 
-git.findGitRoot()
+const log = message => {
+  console.log(`JIRA prepare commit msg > ${message}`);
+};
+
+Promise.resolve()
+  .then(() => log('start'))
+  .then(() => git.findGitRoot())
   .then(gitRoot => git.getBranchName(gitRoot))
   .then(branch => git.getJiraTicket(branch))
+  .then(ticket => log(`The JIRA ticket ID is: ${ticket}`) || ticket)
   .then(ticket => git.writeJiraTicket(ticket))
-  .catch(err => console.error(`JIRA prepare commit msg > ${err.message || err}`))
-  .finally(() => console.log('JIRA prepare commit msg > done'));
+  .catch(err => log(err.message || err))
+  .finally(() => log('done'));
