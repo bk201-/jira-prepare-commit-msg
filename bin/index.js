@@ -14,4 +14,4 @@ Promise.resolve()
   .then(ticket => log(`The JIRA ticket ID is: ${ticket}`) || ticket)
   .then(ticket => git.writeJiraTicket(ticket))
   .catch(err => log(err.message || err))
-  .finally(() => log('done'));
+  .then(() => log('done'));
