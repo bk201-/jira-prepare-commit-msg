@@ -10,14 +10,14 @@ function findGitRoot() {
   const gitDirOrFile = findUp.sync('.git', {cwd});
 
   if (gitDirOrFile === null) {
-    throw new Error(`Can't find .git, skipping Git hooks.`);
+    throw new Error('Can\'t find .git, skipping Git hooks.');
   }
 
   // Resolve git directory (e.g. .git/ or .git/modules/path/to/submodule)
   const resolvedGitDir = resolveGitDir(gitDirOrFile);
 
   if (resolvedGitDir === null) {
-    throw new Error(`Can't find resolved .git directory, skipping Git hooks.`);
+    throw new Error('Can\'t find resolved .git directory, skipping Git hooks.');
   }
 
   return resolvedGitDir;
@@ -50,7 +50,7 @@ function getMsgFilePath(index = 0) {
 
   // Throw a friendly error if the git params environment variable can't be found – the user may be missing Husky.
   if (!gitParams) {
-    throw new Error(`Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?`);
+    throw new Error('Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?');
   }
 
   // Unfortunately, this will break if there are escaped spaces within a single argument;
@@ -64,9 +64,11 @@ function getBranchName(gitRoot) {
       if (err) {
         return reject(err);
       }
+
       if (stderr) {
         return reject(new Error(String(stderr)));
       }
+
       resolve(String(stdout).trim());
     });
   });
@@ -78,7 +80,7 @@ function getJiraTicket(branchName) {
   const jiraTicket = matched && matched[0];
 
   if (!jiraTicket) {
-    throw new Error(`The JIRA ticket ID not found`);
+    throw new Error('The JIRA ticket ID not found');
   }
 
   return jiraTicket;
