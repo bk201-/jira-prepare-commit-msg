@@ -7,20 +7,20 @@ function findGitRoot() {
   const cwd = process.cwd();
 
   // Get directory containing .git directory or in the case of Git submodules, the .git file
-  const gitDirOrFile = findUp.sync('.git', {cwd});
+  return Promise.race([findUp('.git', {cwd}), findUp('.git', {cwd, type: 'directory'})]).then(gitDirOrFile => {
+    if (gitDirOrFile === null) {
+      throw new Error('Can\'t find .git, skipping Git hooks.');
+    }
 
-  if (gitDirOrFile === null) {
-    throw new Error('Can\'t find .git, skipping Git hooks.');
-  }
+    // Resolve git directory (e.g. .git/ or .git/modules/path/to/submodule)
+    const resolvedGitDir = resolveGitDir(gitDirOrFile);
 
-  // Resolve git directory (e.g. .git/ or .git/modules/path/to/submodule)
-  const resolvedGitDir = resolveGitDir(gitDirOrFile);
+    if (resolvedGitDir === null) {
+      throw new Error('Can\'t find resolved .git directory, skipping Git hooks.');
+    }
 
-  if (resolvedGitDir === null) {
-    throw new Error('Can\'t find resolved .git directory, skipping Git hooks.');
-  }
-
-  return resolvedGitDir;
+    return resolvedGitDir;
+  });
 }
 
 function resolveGitDir(gitDirOrFile) {
@@ -50,7 +50,9 @@ function getMsgFilePath(index = 0) {
 
   // Throw a friendly error if the git params environment variable can't be found – the user may be missing Husky.
   if (!gitParams) {
-    throw new Error('Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?');
+    throw new Error(
+      'Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?'
+    );
   }
 
   // Unfortunately, this will break if there are escaped spaces within a single argument;
@@ -60,17 +62,21 @@ function getMsgFilePath(index = 0) {
 
 function getBranchName(gitRoot) {
   return new Promise((resolve, reject) => {
-    childProcess.exec(`git --git-dir=${gitRoot} symbolic-ref --short HEAD`, {encoding: 'utf-8'}, (err, stdout, stderr) => {
-      if (err) {
-        return reject(err);
-      }
+    childProcess.exec(
+      `git --git-dir=${gitRoot} symbolic-ref --short HEAD`,
+      {encoding: 'utf-8'},
+      (err, stdout, stderr) => {
+        if (err) {
+          return reject(err);
+        }
 
-      if (stderr) {
-        return reject(new Error(String(stderr)));
-      }
+        if (stderr) {
+          return reject(new Error(String(stderr)));
+        }
 
-      resolve(String(stdout).trim());
-    });
+        resolve(String(stdout).trim());
+      }
+    );
   });
 }
 
@@ -88,6 +94,7 @@ function getJiraTicket(branchName) {
 
 function writeJiraTicket(jiraTicket) {
   const messageFilePath = getMsgFilePath();
+
   let message;
 
   // Read file with commit message
@@ -97,16 +104,15 @@ function writeJiraTicket(jiraTicket) {
     throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
 
-  // Add jira ticket into the message in case of missing
-  if (message.indexOf(jiraTicket) < 0) {
-    message = `[${jiraTicket}]\n${message}`;
-  }
+  const messageTitle = message.split('\n')[0];
 
-  // Write message back to file
-  try {
-    fs.writeFileSync(messageFilePath, message, {encoding: 'utf-8'});
-  } catch (ex) {
-    throw new Error(`Unable to write the file "${messageFilePath}".`);
+  // Add jira ticket into the message in case of missing
+  if (messageTitle.indexOf(jiraTicket) < 0) {
+    try {
+      fs.writeFileSync(messageFilePath, `[${jiraTicket}]: ${message}`, {encoding: 'utf-8'});
+    } catch (ex) {
+      throw new Error(`Unable to write the file "${messageFilePath}".`);
+    }
   }
 }
 
