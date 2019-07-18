@@ -4,6 +4,9 @@
   "description": "Husky Git hook to add JIRA ticket ID into the commit message",
   "author": "Dmitry Shilov",
   "bin": "./bin/index.js",
+  "files": [
+    "bin"
+  ],
   "keywords": [
     "husky",
     "jira",
