@@ -3,11 +3,23 @@ const findUp = require('find-up');
 const fs = require('fs');
 const path = require('path');
 
+const verbose = process.argv.find(arg => arg === '--verbose');
+
+const debug = message => {
+  if (!verbose) {
+    return;
+  }
+
+  console.log(`JIRA prepare commit msg > DEBUG: ${message}`);
+};
+
 function findGitRoot() {
+  debug('findGitRoot');
+
   const cwd = process.cwd();
 
   // Get directory containing .git directory or in the case of Git submodules, the .git file
-  const gitDirOrFile = findUp.sync('.git', {cwd});
+  const gitDirOrFile = findUp.sync('.git', {cwd, type: 'directory'});
 
   if (gitDirOrFile === null) {
     throw new Error('Can\'t find .git, skipping Git hooks.');
@@ -24,6 +36,8 @@ function findGitRoot() {
 }
 
 function resolveGitDir(gitDirOrFile) {
+  debug('resolveGitDir');
+
   const stats = fs.lstatSync(gitDirOrFile);
 
   // If it's a .git file resolve path
@@ -45,12 +59,15 @@ function resolveGitDir(gitDirOrFile) {
 }
 
 function getMsgFilePath(index = 0) {
+  debug('getMsgFilePath');
+
   // Husky stashes git hook parameters $* into a HUSKY_GIT_PARAMS (GIT_PARAMS if < 1.x) env var.
   const gitParams = process.env.HUSKY_GIT_PARAMS || process.env.GIT_PARAMS || '';
 
   // Throw a friendly error if the git params environment variable can't be found – the user may be missing Husky.
   if (!gitParams) {
-    throw new Error('Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. Is a supported Husky version installed?');
+    throw new Error('Neither process.env.HUSKY_GIT_PARAMS nor process.env.GIT_PARAMS are set. ' +
+      'Is a supported Husky version installed?');
   }
 
   // Unfortunately, this will break if there are escaped spaces within a single argument;
@@ -59,22 +76,29 @@ function getMsgFilePath(index = 0) {
 }
 
 function getBranchName(gitRoot) {
+  debug('getBranchName');
+
   return new Promise((resolve, reject) => {
-    childProcess.exec(`git --git-dir=${gitRoot} symbolic-ref --short HEAD`, {encoding: 'utf-8'}, (err, stdout, stderr) => {
-      if (err) {
-        return reject(err);
-      }
+    childProcess.exec(
+      `git --git-dir=${gitRoot} symbolic-ref --short HEAD`,
+      {encoding: 'utf-8'},
+      (err, stdout, stderr) => {
+        if (err) {
+          return reject(err);
+        }
 
-      if (stderr) {
-        return reject(new Error(String(stderr)));
-      }
+        if (stderr) {
+          return reject(new Error(String(stderr)));
+        }
 
-      resolve(String(stdout).trim());
-    });
+        resolve(String(stdout).trim());
+      });
   });
 }
 
 function getJiraTicket(branchName) {
+  debug('getJiraTicket');
+
   const jiraIdPattern = /([A-Z]+-\d+)/i;
   const matched = branchName.match(jiraIdPattern);
   const jiraTicket = matched && matched[0];
@@ -87,6 +111,8 @@ function getJiraTicket(branchName) {
 }
 
 function writeJiraTicket(jiraTicket) {
+  debug('writeJiraTicket');
+
   const messageFilePath = getMsgFilePath();
   let message;
 

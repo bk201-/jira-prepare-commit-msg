@@ -1,6 +1,6 @@
 {
   "name": "jira-prepare-commit-msg",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Husky Git hook to add JIRA ticket ID into the commit message",
   "author": "Dmitry Shilov",
   "bin": "./bin/index.js",
@@ -22,17 +22,26 @@
   },
   "license": "MIT",
   "dependencies": {
-    "find-up": "^4.0.0"
+    "find-up": "^4.1.0"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-xo-space": "^0.21.0"
+    "ava": "^2.2.0",
+    "eslint": "^6.1.0",
+    "eslint-config-xo-space": "^0.21.0",
+    "rimraf": "^2.6.3"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   },
   "scripts": {
-    "lint": "eslint \"bin/*.js\""
+    "lint": "eslint \"bin/*.js\"",
+    "prepare:husky:2": "cd ./test/husky2 && git init && git checkout -b JIRA-1234-test-husky2 && npm i",
+    "prepare:husky:3": "cd ./test/husky3 && git init && git checkout -b JIRA-4321-test-husky3 && npm i",
+    "cleanup:husky:2": "cd ./test/husky2 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
+    "cleanup:husky:3": "cd ./test/husky3 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
+    "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3",
+    "test": "ava test/test.js",
+    "posttest": "npm run cleanup:husky:2 && npm run cleanup:husky:3"
   },
   "eslintConfig": {
     "extends": "xo-space/esnext"

@@ -2,7 +2,7 @@
 
 Husky command to add JIRA ticket ID into the commit message if it is missed.
 
-The JIRA ticket ID is taken from a git branch name
+The JIRA ticket ID is taken from a git branch name.
 
 ## Installation
 
@@ -18,8 +18,10 @@ Inside your package.json add a standard husky npm script for the git hook:
 
 ```json
 {
-  "scripts": {
-    "prepare-commit-msg": "jira-prepare-commit-msg"
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "jira-prepare-commit-msg"
+    }
   }
 }
 ```
@@ -35,7 +37,7 @@ The following patterns are currently supported:
 - [ ] Support user patterns
 - [ ] Support configuration (package.json)
 - [x] Lint
-- [ ] Tests
+- [x] Tests
 
 ## License
 

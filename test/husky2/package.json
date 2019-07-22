@@ -1,0 +1,13 @@
+{
+  "name": "husky2-test",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "husky": "^2.7.0"
+  },
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "node ../../bin/index.js --verbose"
+    }
+  }
+}
