@@ -16,6 +16,8 @@ function exec(cmd, cwd) {
 
 test('husky2 JIRA ticket ID should be in commit message', async t => {
   const cwd = path.join(__dirname, 'husky2');
+  await exec('git config user.email "you@example.com"', cwd);
+  await exec('git config user.name "Your Name"', cwd);
   await exec('git add .gitignore', cwd);
   await exec('git commit -m "test"', cwd);
   const stdout = await exec('git log', cwd);
@@ -25,6 +27,8 @@ test('husky2 JIRA ticket ID should be in commit message', async t => {
 
 test('husky3 JIRA ticket ID should be in commit message', async t => {
   const cwd = path.join(__dirname, 'husky3');
+  await exec('git config user.email "you@example.com"', cwd);
+  await exec('git config user.name "Your Name"', cwd);
   await exec('git add .gitignore', cwd);
   await exec('git commit -m "test"', cwd);
   const stdout = await exec('git log', cwd);
