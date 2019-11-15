@@ -112,7 +112,7 @@ function getJiraTicket(branchName) {
 
 function writeJiraTicket(jiraTicket) {
   debug('writeJiraTicket');
-
+  const [, , ...arguments] = process.argv;
   const messageFilePath = getMsgFilePath();
   let message;
 
@@ -124,8 +124,13 @@ function writeJiraTicket(jiraTicket) {
   }
 
   // Add jira ticket into the message in case of missing
-  if (message.indexOf(jiraTicket) < 0) {
-    message = `[${jiraTicket}]\n${message}`;
+  if (message.indexOf(jiraTicket) === -1) {
+    if (arguments.includes('--conventional-commits') && message.indexOf(':') !== -1) {
+      let [before, after] = message.split(/:(.+)/);
+      message = `${before}: [${jiraTicket}]${after}`;
+    } else {
+      message = `[${jiraTicket}]\n${message}`;
+    }
   }
 
   // Write message back to file
