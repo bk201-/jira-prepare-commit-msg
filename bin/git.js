@@ -123,9 +123,18 @@ function writeJiraTicket(jiraTicket) {
     throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
 
-  // Add jira ticket into the message in case of missing
-  if (message.indexOf(jiraTicket) < 0) {
-    message = `[${jiraTicket}]\n${message}`;
+  // if the jira ticket isn't in the valid part of the message, add it to the start
+
+  // ignore everything after the scissors comment, which present when doing a --verbose commit,
+  // or `git config commit.status true`
+  const messageSections = message.split('# ------------------------ >8 ------------------------')[0];
+  const linesAboveScissors = messageSections.split('\n');
+
+  if (linesAboveScissors.every(
+    // if every line left is either commented or doesn't have the issue code
+    (line) => line.indexOf('#') === 0 || line.indexOf(jiraTicket) < 0)) {
+    // prepend the issue code to the commit message
+    message = `[${jiraTicket.toUpperCase()}] ${message}`;
   }
 
   // Write message back to file
