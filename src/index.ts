@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const git = require('./git');
+import * as git from './git';
 
 const log = message => {
   console.log(`JIRA prepare commit msg > ${message}`);
@@ -14,7 +14,7 @@ const error = err => {
   log('start');
 
   try {
-    const gitRoot = await git.findGitRoot();
+    const gitRoot = await git.getRoot();
     const branch = await git.getBranchName(gitRoot);
     const ticket = await git.getJiraTicket(branch);
 
