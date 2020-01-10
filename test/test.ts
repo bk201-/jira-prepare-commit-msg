@@ -2,7 +2,7 @@ const test = require('ava');
 const path = require('path');
 const childProcess = require('child_process');
 
-function exec(cmd, cwd) {
+function exec(cmd, cwd): Promise<string> {
   return new Promise((resolve, reject) => {
     childProcess.exec(cmd, {encoding: 'utf-8', cwd}, (err, stdout) => {
       if (err) {

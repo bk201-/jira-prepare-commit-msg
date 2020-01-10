@@ -21,19 +21,27 @@
     "url": "https://github.com/bk201-/jira-prepare-commit-msg"
   },
   "license": "MIT",
-  "dependencies": {
-    "find-up": "^4.1.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^13.1.6",
     "ava": "^2.4.0",
     "eslint": "^6.8.0",
     "eslint-config-xo-space": "^0.22.0",
     "rimraf": "^3.0.0",
+    "ts-node": "^8.6.0",
     "typescript": "^3.7.4"
   },
   "engines": {
     "node": ">=10.13"
+  },
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
   },
   "scripts": {
     "compile": "tsc",
@@ -43,7 +51,7 @@
     "cleanup:husky:2": "cd ./test/husky2 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
     "cleanup:husky:3": "cd ./test/husky3 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
     "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3",
-    "test": "ava test/test.js",
+    "test": "ava test/test.ts",
     "posttest": "npm run cleanup:husky:2 && npm run cleanup:husky:3"
   },
   "eslintConfig": {
