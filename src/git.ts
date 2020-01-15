@@ -46,7 +46,7 @@ export function getRoot(): string {
   return path.resolve(cwd, gitCommonDir);
 }
 
-export async function getBranchName(gitRoot): Promise<string> {
+export async function getBranchName(gitRoot: string): Promise<string> {
   debug('gitBranchName');
 
   return new Promise((resolve, reject) => {
@@ -67,7 +67,7 @@ export async function getBranchName(gitRoot): Promise<string> {
   });
 }
 
-export function getJiraTicket(branchName) {
+export function getJiraTicket(branchName: string): string {
   debug('getJiraTicket');
 
   const jiraIdPattern = /([A-Z]+-\d+)/i;
@@ -81,7 +81,7 @@ export function getJiraTicket(branchName) {
   return jiraTicket;
 }
 
-export function writeJiraTicket(jiraTicket): void {
+export function writeJiraTicket(jiraTicket: string): void {
   debug('writeJiraTicket');
 
   const messageFilePath = getMsgFilePath();
