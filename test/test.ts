@@ -1,8 +1,8 @@
-const test = require('ava');
-const path = require('path');
-const childProcess = require('child_process');
+import test from 'ava';
+import * as path from 'path';
+import * as childProcess from 'child_process';
 
-function exec(cmd, cwd) {
+function exec(cmd: string, cwd: string): Promise<string> {
   return new Promise((resolve, reject) => {
     childProcess.exec(cmd, {encoding: 'utf-8', cwd}, (err, stdout) => {
       if (err) {
