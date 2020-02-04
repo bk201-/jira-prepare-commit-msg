@@ -96,7 +96,7 @@ export function writeJiraTicket(jiraTicket: string): void {
 
   // Add jira ticket into the message in case of missing
   if (message.indexOf(jiraTicket) < 0) {
-    message = `[${jiraTicket}]\n${message}`;
+    message = `${jiraTicket} ${message}`;
   }
 
   // Write message back to file
