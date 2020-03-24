@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
+import * as findConfig from 'find-config';
 
 const verbose = process.argv.find((arg) => arg === '--verbose');
 
@@ -27,6 +28,22 @@ const getMsgFilePath = (index = 0): string => {
   // I don't believe there's a workaround for this without modifying Husky itself
   return gitParams.split(' ')[index];
 };
+
+export function readConfigFile() {
+  // locate the nearest package.json
+  let pkg = findConfig('package.json', { home: false });
+  if (pkg) {
+    const pkgDir = path.dirname(pkg);
+    pkg = require(pkg);
+    if (pkg.config && pkg.config['jira-prepare-commit-msg'] && pkg.config['jira-prepare-commit-msg'].config) {
+      return pkg.config['jira-prepare-commit-msg'].config
+    }
+  }
+  debug(
+    'Unable to find a configuration file.'
+  );
+  return null;
+}
 
 export function getRoot(): string {
   debug('getRoot');
@@ -93,6 +110,7 @@ export function getJiraTicket(branchName: string): string {
 export function writeJiraTicket(jiraTicket: string): void {
   debug('writeJiraTicket');
 
+  const config = readConfigFile();
   const messageFilePath = getMsgFilePath();
   let message;
 
@@ -105,7 +123,11 @@ export function writeJiraTicket(jiraTicket: string): void {
 
   // Add jira ticket into the message in case of missing
   if (!message.includes(jiraTicket)) {
-    message = `[${jiraTicket}]\n${message}`;
+    if (config && config === 'inline') {
+      message = `[${jiraTicket}]-${message}`;
+    } else {
+      message = `[${jiraTicket}]\n${message}`;
+    }
   }
 
   // Write message back to file

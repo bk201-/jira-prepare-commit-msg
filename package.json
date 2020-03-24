@@ -71,5 +71,10 @@
   },
   "eslintConfig": {
     "extends": "xo-space/esnext"
+  },
+  "config": {
+    "jira-prepare-commit-msg": {
+      "config": "inline"
+    }
   }
 }

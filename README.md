@@ -26,6 +26,17 @@ Inside your package.json add a standard husky npm script for the git hook:
 }
 ```
 
+If you need the Jira ticket number to be inline add the following configuration in your `package.json`:
+```json
+{
+  "config": {
+    "jira-prepare-commit-msg": {
+      "config": "inline"
+    }
+  }
+}
+```
+
 ## Supported pattern
 
 The following patterns are currently supported:
