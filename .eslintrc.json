@@ -1,0 +1,36 @@
+
+{
+  "env": {
+    "browser": false,
+    "es6": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion":  2020,
+    "project": "tsconfig.json",
+    "sourceType": "module"
+  },
+  "extends": [
+    "standard",
+    "semistandard",
+    "prettier",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "plugins": [
+    "standard",
+    "prettier",
+    "@typescript-eslint"
+  ],
+  "ignorePatterns": ["node_modules/", "bin/", "*.config.js"],
+  "rules": {
+    "max-len": ["error", {
+      "code": 120,
+      "tabWidth": 2
+    }],
+    "prettier/prettier": "error",
+    "@typescript-eslint/ban-ts-ignore": 1
+  }
+}

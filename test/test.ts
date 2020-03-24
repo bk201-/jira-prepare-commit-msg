@@ -35,3 +35,14 @@ test('husky3 JIRA ticket ID should be in commit message', async t => {
   const index = stdout.search(/(\[[A-Z]+-\d+])/i);
   t.is(index > -1, true);
 });
+
+test('husky4 JIRA ticket ID should be in commit message', async t => {
+  const cwd = path.join(__dirname, 'husky4');
+  await exec('git config user.email "you@example.com"', cwd);
+  await exec('git config user.name "Your Name"', cwd);
+  await exec('git add .gitignore', cwd);
+  await exec('git commit -m "test"', cwd);
+  const stdout = await exec('git log', cwd);
+  const index = stdout.search(/(\[[A-Z]+-\d+])/i);
+  t.is(index > -1, true);
+});

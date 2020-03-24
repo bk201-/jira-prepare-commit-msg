@@ -10,6 +10,12 @@ trim_trailing_whitespace = true
 end_of_line = lf
 max_line_length = 120
 
+[{*.js,*.cjs,*.ts}]
+indent_size = 2
+tab_width = 2
+
 [*.md]
+indent_size = 2
+tab_width = 2
 max_line_length = off
 trim_trailing_whitespace = false

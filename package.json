@@ -1,6 +1,6 @@
 {
   "name": "jira-prepare-commit-msg",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Husky Git hook to add JIRA ticket ID into the commit message",
   "author": "Dmitry Shilov",
   "bin": "./bin/index.js",
@@ -23,19 +23,28 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^13.1.7",
+    "@types/node": "^13.9.3",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
     "ava": "^3.5.1",
     "eslint": "^6.8.0",
-    "eslint-config-xo-space": "^0.24.0",
-    "rimraf": "^3.0.0",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.7.4"
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-config-semistandard": "^15.0.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^2.0.2",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8.8.1",
+    "typescript": "^3.8.3"
   },
   "engines": {
     "node": ">=10.13"
   },
   "ava": {
-    "compileEnhancements": false,
     "extensions": [
       "ts"
     ],
@@ -44,14 +53,20 @@
     ]
   },
   "scripts": {
-    "compile": "tsc",
-    "lint": "eslint \"bin/*.js\"",
+    "clean": "rimraf -- ./bin/*",
+    "compile": "npm run clean && npm run tsc",
+    "eslint": "eslint --ext .js --ext .ts src/",
+    "eslint:fix": "eslint --ext .js --ext .ts src/ --fix",
+    "prettier": "prettier --parser typescript --write \"src/**/*.ts\"",
+    "tsc": "tsc -p ./",
     "prepare:husky:2": "cd ./test/husky2 && git init && git checkout -b JIRA-1234-test-husky2 && npm i",
     "prepare:husky:3": "cd ./test/husky3 && git init && git checkout -b JIRA-4321-test-husky3 && npm i",
+    "prepare:husky:4": "cd ./test/husky4 && git init && git checkout -b JIRA-4321-test-husky4 && npm i",
     "cleanup:husky:2": "cd ./test/husky2 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
     "cleanup:husky:3": "cd ./test/husky3 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
-    "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3",
-    "test": "ava test/test.ts",
+    "cleanup:husky:4": "cd ./test/husky4 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
+    "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3 && npm run prepare:husky:4",
+    "test": "npm run compile && ava test/test.ts",
     "posttest": "npm run cleanup:husky:2 && npm run cleanup:husky:3"
   },
   "eslintConfig": {

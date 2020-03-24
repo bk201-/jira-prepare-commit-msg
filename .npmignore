@@ -1,0 +1,12 @@
+src
+.gitattributes
+.github
+.editorconfig
+.eslintrc.json
+.huskyrc.json
+.lintstagedrc.json
+.npmignore
+.prettierrc.json
+.travis.yml
+rollup.config.js
+tsconfig.json
