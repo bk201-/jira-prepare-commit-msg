@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
-import * as findConfig from 'find-config';
+import { cosmiconfigSync } from 'cosmiconfig';
 
 const verbose = process.argv.find((arg) => arg === '--verbose');
 
@@ -31,17 +31,11 @@ const getMsgFilePath = (index = 0): string => {
 
 export function readConfigFile() {
   // locate the nearest package.json
-  let pkg = findConfig('package.json', { home: false });
-  if (pkg) {
-    const pkgDir = path.dirname(pkg);
-    pkg = require(pkg);
-    if (pkg.config && pkg.config['jira-prepare-commit-msg'] && pkg.config['jira-prepare-commit-msg'].config) {
-      return pkg.config['jira-prepare-commit-msg'].config
-    }
+  const searchResult = cosmiconfigSync('config.jira-prepare-commit-msg', { searchPlaces: ['package.json'] }).search();
+  if (searchResult) {
+    return searchResult.config;
   }
-  debug(
-    'Unable to find a configuration file.'
-  );
+  debug('Unable to find a configuration.');
   return null;
 }
 
@@ -123,7 +117,7 @@ export function writeJiraTicket(jiraTicket: string): void {
 
   // Add jira ticket into the message in case of missing
   if (!message.includes(jiraTicket)) {
-    if (config && config === 'inline') {
+    if (config && config.inline === true) {
       message = `[${jiraTicket}]-${message}`;
     } else {
       message = `[${jiraTicket}]\n${message}`;
