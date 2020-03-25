@@ -2,18 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
 import { JPCMConfig } from './config';
+import { debug } from './log';
 
-const verbose = process.argv.find((arg) => arg === '--verbose');
 // eslint-disable-next-line max-len
 const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z ]+\)!?)?: ([\w ]+)$/g;
-
-function debug(message: string): void {
-  if (!verbose) {
-    return;
-  }
-
-  console.log(`JIRA prepare commit msg > DEBUG: ${message}`);
-}
 
 function getMsgFilePath(index = 0): string {
   debug('getMsgFilePath');
@@ -36,7 +28,9 @@ function escapeReplacement(str: string): string {
 }
 
 function replaceMessageByPattern(jiraTicket: string, message: string, pattern: string): string {
-  return pattern.replace('$J', escapeReplacement(jiraTicket)).replace('$M', escapeReplacement(message));
+  const result = pattern.replace('$J', escapeReplacement(jiraTicket)).replace('$M', escapeReplacement(message));
+  debug(`Replacing message: ${result}`);
+  return result;
 }
 
 export type GitRevParseResult = {
@@ -127,6 +121,8 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
     throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
 
+  debug(`Commit message: ${message}`);
+
   // ignore everything after commentChar or the scissors comment, which present when doing a --verbose commit,
   // or `git config commit.status true`
   const messageSections = message.split('------------------------ >8 ------------------------')[0];
@@ -134,24 +130,25 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
     .trim()
     .split('\n')
     .map((line) => line.trimLeft())
-    .filter((line) => line.startsWith(config.commentChar));
+    .filter((line) => !line.startsWith(config.commentChar));
 
-  if (!lines.length) {
-    return;
-  }
+  debug(`Lines: ${lines.join('\n')}`);
 
   if (config.isConventionalCommit) {
     // In the first line should be special conventional format
     const firstLine = lines[0];
-    if (conventionalCommitRegExp.exec(firstLine)) {
-      const [, type, scope, msg] = firstLine.match(conventionalCommitRegExp) ?? [];
+    debug(`Finding conventional commit in: ${firstLine}`);
+    conventionalCommitRegExp.lastIndex = -1;
+    const [match, type, scope, msg] = conventionalCommitRegExp.exec(firstLine) ?? [];
+    if (match) {
+      debug(`Conventional commit message: ${match}`);
       lines[0] = `${type}${scope}: ${replaceMessageByPattern(jiraTicket, msg, config.messagePattern)}`;
     }
-  } else {
-    // Add jira ticket into the message in case of missing
-    if (lines.every((line) => !line.includes(jiraTicket))) {
-      lines[0] = replaceMessageByPattern(jiraTicket, lines[0], config.messagePattern);
-    }
+  }
+
+  // Add jira ticket into the message in case of missing
+  if (lines.every((line) => !line.includes(jiraTicket))) {
+    lines[0] = replaceMessageByPattern(jiraTicket, lines[0], config.messagePattern);
   }
 
   // Write message back to file

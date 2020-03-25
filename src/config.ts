@@ -1,4 +1,5 @@
 import { cosmiconfig } from 'cosmiconfig';
+import { debug } from './log';
 
 export type JPCMConfig = {
   messagePattern: string; // Where $J is a ticket number, $M is the message
@@ -38,12 +39,18 @@ export async function loadConfig(configPath?: string): Promise<JPCMConfig> {
 
     const config = configPath ? await explorer.load(resolveConfig(configPath)) : await explorer.search();
 
+    debug(`Loaded config: ${JSON.stringify(config)}`);
+
     if (config && !config.isEmpty) {
-      return { ...defaultConfig, ...config.config };
+      const result = { ...defaultConfig, ...config.config };
+      debug(`Used config: ${JSON.stringify(result)}`);
+      return result;
     }
   } catch {
     // ignore
   }
 
-  return { ...defaultConfig };
+  const result = { ...defaultConfig };
+  debug(`Used config: ${JSON.stringify(result)}`);
+  return result;
 }

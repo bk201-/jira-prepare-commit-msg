@@ -1,6 +1,6 @@
 {
   "name": "jira-prepare-commit-msg",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Husky Git hook to add JIRA ticket ID into the commit message",
   "author": "Dmitry Shilov",
   "bin": "./bin/index.js",
@@ -70,8 +70,5 @@
     "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3 && npm run prepare:husky:4",
     "test": "npm run compile && ava test/test.ts",
     "posttest": "npm run cleanup:husky:2 && npm run cleanup:husky:3"
-  },
-  "eslintConfig": {
-    "extends": "xo-space/esnext"
   }
 }

@@ -2,14 +2,7 @@
 
 import * as git from './git';
 import { loadConfig } from './config';
-
-const log = (message: string): void => {
-  console.log(`JIRA prepare commit msg > ${message}`);
-};
-
-const error = (err: string): void => {
-  console.error(`JIRA prepare commit msg > ${err}`);
-};
+import { error, log } from './log';
 
 (async (): Promise<void> => {
   log('start');
