@@ -21,13 +21,14 @@
     "url": "https://github.com/bk201-/jira-prepare-commit-msg"
   },
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "cosmiconfig": "^6.0.0"
+  },
   "devDependencies": {
     "@types/node": "^13.9.3",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "ava": "^3.5.1",
-    "cosmiconfig": "^6.0.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-config-semistandard": "^15.0.0",
