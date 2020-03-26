@@ -1,5 +1,5 @@
 import { cosmiconfig } from 'cosmiconfig';
-import { debug } from './log';
+import { debug, error } from './log';
 
 export type JPCMConfig = {
   messagePattern: string; // Where $J is a ticket number, $M is the message
@@ -45,8 +45,8 @@ export async function loadConfig(configPath?: string): Promise<JPCMConfig> {
       debug(`Used config: ${JSON.stringify(result)}`);
       return result;
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    error(`Loading configuration failed with error: ${err.toString()}`);
   }
 
   const result = { ...defaultConfig };
