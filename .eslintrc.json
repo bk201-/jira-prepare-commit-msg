@@ -24,7 +24,7 @@
     "prettier",
     "@typescript-eslint"
   ],
-  "ignorePatterns": ["node_modules/", "bin/", "*.config.js"],
+  "ignorePatterns": ["node_modules/", "bin/", "test/", "*.config.js"],
   "rules": {
     "max-len": ["error", {
       "code": 120,
