@@ -25,7 +25,7 @@
     "cosmiconfig": "^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "^13.9.3",
+    "@types/node": "^13.9.4",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "ava": "^3.5.1",
