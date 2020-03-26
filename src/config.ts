@@ -32,7 +32,6 @@ export async function loadConfig(configPath?: string): Promise<JPCMConfig> {
         '.jirapreparecommitmsgrc.json',
         '.jirapreparecommitmsgrc.yaml',
         '.jirapreparecommitmsgrc.yml',
-        '.jirapreparecommitmsgrc.js',
         'jira-prepare-commit-msg.config.js',
       ],
     });
