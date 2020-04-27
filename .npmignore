@@ -1,8 +1,12 @@
+.idea
+.vscode
 src
+test
 .gitattributes
 .github
 .editorconfig
 .eslintrc.json
+.gitignore
 .huskyrc.json
 .lintstagedrc.json
 .npmignore
