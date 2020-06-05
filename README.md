@@ -89,7 +89,7 @@ Pattern `([A-Z]+-\\d+)` is currently supported by default.
 
 #### Git comment char
 
-Gir uses `#` by default to comment lines in the commit message. If default char was changed `jira-prepare-commit-msg` can allow set it.
+Git uses `#` by default to comment lines in the commit message. If default char was changed `jira-prepare-commit-msg` can allow set it.
 
 ```json
 {
