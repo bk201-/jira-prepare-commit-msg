@@ -30,7 +30,6 @@
       "code": 120,
       "tabWidth": 2
     }],
-    "prettier/prettier": "error",
-    "@typescript-eslint/ban-ts-ignore": 1
+    "prettier/prettier": "error"
   }
 }
