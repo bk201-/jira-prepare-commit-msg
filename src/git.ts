@@ -80,7 +80,7 @@ export async function getBranchName(gitRoot: string): Promise<string> {
   debug('gitBranchName');
 
   return new Promise((resolve, reject) => {
-    cp.exec(`git --git-dir=${gitRoot} symbolic-ref --short HEAD`, { encoding: 'utf-8' }, (err, stdout, stderr) => {
+    cp.exec(`git --git-dir="${gitRoot}" symbolic-ref --short HEAD`, { encoding: 'utf-8' }, (err, stdout, stderr) => {
       if (err) {
         return reject(err);
       }
