@@ -107,7 +107,7 @@ ticket number to the description set the following setting:
 ```json
 {
   "jira-prepare-commit-msg": {
-    "isConventionalCommit": false
+    "isConventionalCommit": true
   }
 }
 ```
@@ -122,7 +122,7 @@ If the configuration is:
 {
   "jira-prepare-commit-msg": {
     "messagePattern": "[$J] $M",
-    "isConventionalCommit": false
+    "isConventionalCommit": true
   }
 }
 ``` 

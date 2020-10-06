@@ -9,5 +9,9 @@
     "hooks": {
       "prepare-commit-msg": "node ../../bin/index.js --verbose"
     }
+  },
+  "jira-prepare-commit-msg": {
+    "isConventionalCommit": true,
+    "messagePattern": "[$J]. $M"
   }
 }

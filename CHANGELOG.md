@@ -1,3 +1,10 @@
+### 1.4.1
+
+- [fix] Supports not whitespace characters for conventional commit
+- [minor] Updates tests
+- [minor] Bumps versions
+- [minor] Fixes README
+
 ### 1.4.0
 
 - [fix] Supports git directories with “spaces” in their path
