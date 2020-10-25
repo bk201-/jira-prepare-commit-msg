@@ -1,4 +1,6 @@
 # jira-prepare-commit-msg
+[![Downloads](https://img.shields.io/npm/dm/jira-prepare-commit-msg)](https://www.npmjs.com/package/jira-prepare-commit-msg)
+[![MIT license](https://img.shields.io/npm/l/jira-prepare-commit-msg)](http://opensource.org/licenses/MIT)
 
 The husky command to add JIRA ticket ID into the commit message if it is missed.
 
