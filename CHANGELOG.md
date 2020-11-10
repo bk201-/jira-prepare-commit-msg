@@ -1,3 +1,10 @@
+### 1.4.2
+
+- [fix] Supports empty and default commit message
+- [minor] Updates tests logs
+- [minor] Bumps versions
+- [minor] Fixes README
+
 ### 1.4.1
 
 - [fix] Supports not whitespace characters for conventional commit

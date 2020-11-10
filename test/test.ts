@@ -2,9 +2,15 @@ import test, { ExecutionContext } from "ava";
 import * as path from 'path';
 import * as childProcess from 'child_process';
 
-function exec(cmd: string, cwd: string): Promise<string> {
+function exec(cmd: string, cwd: string, t: ExecutionContext): Promise<string> {
   return new Promise((resolve, reject) => {
-    childProcess.exec(cmd, {encoding: 'utf-8', cwd}, (err, stdout) => {
+    console.log(`${t.title}. Exec ${cmd}`)
+
+    childProcess.exec(cmd, {encoding: 'utf-8', cwd}, (err, stdout, stderr) => {
+      err && console.error(`\t <= exec error: ${err}`);
+      stdout && console.log(`\t <= exec stdout: ${stdout}`);
+      stderr && console.error(`\t <= exec stderr: ${stderr}`);
+
       if (err) {
         return reject(err);
       }
@@ -18,11 +24,11 @@ async function steps(folder: string, t: ExecutionContext): Promise<void> {
   const message = 'chore(deps): Finally solved that problem!';
   const expected = 'chore(deps): [JIRA-4321]. Finally solved that problem!'
   const cwd = path.join(__dirname, folder);
-  await exec('git config user.email "you@example.com"', cwd);
-  await exec('git config user.name "Your Name"', cwd);
-  await exec('git add .gitignore', cwd);
-  await exec(`git commit -m "${message}"`, cwd);
-  const stdout = await exec('git log', cwd);
+  await exec('git config user.email "you@example.com"', cwd, t);
+  await exec('git config user.name "Your Name"', cwd, t);
+  await exec('git add .gitignore', cwd, t);
+  await exec(`git commit -m "${message}"`, cwd, t);
+  const stdout = await exec('git log', cwd, t);
   const index = stdout.search(/(\[[A-Z]+-\d+])/i);
   t.is(index > -1, true);
   const index2 = stdout.includes(expected);

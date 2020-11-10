@@ -116,7 +116,7 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
 
   // Read file with commit message
   try {
-    message = fs.readFileSync(messageFilePath, { encoding: 'utf-8' });
+    message = fs.readFileSync(messageFilePath, { encoding: 'utf-8' }).trim();
   } catch (ex) {
     throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
@@ -132,11 +132,19 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
     .map((line) => line.trimLeft())
     .filter((line) => !line.startsWith(config.commentChar));
 
-  debug(`Lines: ${lines.join('\n')}`);
+  const cleanMessage = lines.join('\n');
+
+  debug(`Lines: ${cleanMessage}`);
+
+  // Message was empty
+  if (cleanMessage.length === 0 && message === cleanMessage && !config.allowEmptyCommitMessage) {
+    debug(`Commit message is empty. Skipping...`);
+    return;
+  }
 
   if (config.isConventionalCommit) {
     // In the first line should be special conventional format
-    const firstLine = lines[0];
+    const firstLine = lines[0] || '';
     debug(`Finding conventional commit in: ${firstLine}`);
     conventionalCommitRegExp.lastIndex = -1;
     const [match, type, scope, msg] = conventionalCommitRegExp.exec(firstLine) ?? [];
@@ -148,7 +156,7 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
 
   // Add jira ticket into the message in case of missing
   if (lines.every((line) => !line.includes(jiraTicket))) {
-    lines[0] = replaceMessageByPattern(jiraTicket, lines[0], config.messagePattern);
+    lines[0] = replaceMessageByPattern(jiraTicket, lines[0] || '', config.messagePattern);
   }
 
   // Write message back to file

@@ -44,7 +44,8 @@ See [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for more details
     "messagePattern": "[$J]\n$M",
     "jiraTicketPattern": "([A-Z]+-\\d+)",
     "commentChar": "#",
-    "isConventionalCommit": false
+    "isConventionalCommit": false,
+    "allowEmptyCommitMessage": false
   }
 }
 ```
@@ -101,6 +102,18 @@ Git uses `#` by default to comment lines in the commit message. If default char 
 }
 ```
 
+#### Allow empty commit message
+
+The commit message might be empty after cleanup or using `-m ""`, `jira-prepare-commit-msg` might insert the JIRA ticket number anyway if this flag is set.
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "allowEmptyCommitMessage": true
+  }
+}
+```
+
 #### Conventional commit
 
 `jira-prepare-commit-msg` supports [conventional commit](https://www.conventionalcommits.org). To insert JIRA
@@ -138,6 +151,7 @@ and commit message is `fix(test)!: important changes` then at result will be `fi
 - [x] Lint
 - [x] Tests
   - [ ] Test for configuration
+- [ ] Don't clear commit message
 
 ## License
 
