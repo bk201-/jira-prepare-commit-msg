@@ -150,7 +150,6 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
     const [match, type, scope, msg] = conventionalCommitRegExp.exec(firstLine) ?? [];
     if (match) {
       debug(`Conventional commit message: ${match}`);
-      debug(`Scope: ${scope}`);
       lines[0] = `${type}${scope || ''}: ${replaceMessageByPattern(jiraTicket, msg, config.messagePattern)}`;
     }
   }
