@@ -1,3 +1,9 @@
+### 1.4.3
+
+- [fix] Supports hyphenated single scope as supported by conventional commit
+- [minor] Adds .DS_Store to gitignore file
+- [minor] Updates tests
+
 ### 1.4.2
 
 - [fix] Supports empty and default commit message
