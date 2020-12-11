@@ -5,7 +5,7 @@ import { JPCMConfig } from './config';
 import { debug } from './log';
 
 // eslint-disable-next-line max-len
-const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z ]+\)!?)?: ([\w \S]+)$/g;
+const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
 
 function getMsgFilePath(index = 0): string {
   debug('getMsgFilePath');
@@ -150,6 +150,7 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
     const [match, type, scope, msg] = conventionalCommitRegExp.exec(firstLine) ?? [];
     if (match) {
       debug(`Conventional commit message: ${match}`);
+      debug(`Scope: ${scope}`);
       lines[0] = `${type}${scope || ''}: ${replaceMessageByPattern(jiraTicket, msg, config.messagePattern)}`;
     }
   }
