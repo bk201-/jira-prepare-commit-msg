@@ -5,7 +5,7 @@ import { JPCMConfig } from './config';
 import { debug } from './log';
 
 // eslint-disable-next-line max-len
-const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z ]+\)!?)?: ([\w \S]+)$/g;
+const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
 
 function getMsgFilePath(index = 0): string {
   debug('getMsgFilePath');
