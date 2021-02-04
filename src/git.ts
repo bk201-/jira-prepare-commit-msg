@@ -6,6 +6,7 @@ import { debug } from './log';
 
 // eslint-disable-next-line max-len
 const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
+const gitVerboseStatusSeparator = '------------------------ >8 ------------------------';
 
 function getMsgFilePath(index = 0): string {
   debug('getMsgFilePath');
@@ -31,6 +32,78 @@ function replaceMessageByPattern(jiraTicket: string, message: string, pattern: s
   const result = pattern.replace('$J', escapeReplacement(jiraTicket)).replace('$M', escapeReplacement(message));
   debug(`Replacing message: ${result}`);
   return result;
+}
+
+function isMessageEmpty(message: string, config: JPCMConfig): boolean {
+  const messageSections = message.split('------------------------ >8 ------------------------')[0];
+  const lines = messageSections
+    .trim()
+    .split('\n')
+    .map((line) => line.trimLeft())
+    .filter((line) => !line.startsWith(config.commentChar));
+
+  const cleanMessage = lines.join('\n').trim();
+
+  return cleanMessage.length === 0 && message === cleanMessage;
+}
+
+function findFirstNotEmptyLineIndex(lines: string[], config: JPCMConfig): number {
+  let firstNotEmptyLine = -1;
+
+  for (let i = 0; i < lines.length; ++i) {
+    const line = lines[i];
+
+    // ignore everything after commentChar or the scissors comment, which present when doing a --verbose commit,
+    // or `git config commit.status true`
+    if (line === gitVerboseStatusSeparator) {
+      break;
+    }
+
+    if (line.startsWith(config.commentChar)) {
+      continue;
+    }
+
+    if (firstNotEmptyLine === -1) {
+      firstNotEmptyLine = i;
+      break;
+    }
+  }
+
+  return firstNotEmptyLine;
+}
+
+function insertJiraTicketIntoMessage(message: string, jiraTicket: string, config: JPCMConfig): string {
+  const lines = message.split('\n').map((line) => line.trimLeft());
+  const firstNotEmptyLine = findFirstNotEmptyLineIndex(lines, config);
+
+  debug(`First not empty line is: ${firstNotEmptyLine > -1 ? lines[firstNotEmptyLine] : ''} (${firstNotEmptyLine})`);
+
+  if (firstNotEmptyLine !== -1) {
+    const line = lines[firstNotEmptyLine];
+
+    if (config.isConventionalCommit) {
+      debug(`Finding conventional commit in: ${line}`);
+      conventionalCommitRegExp.lastIndex = -1;
+      const [match, type, scope, msg] = conventionalCommitRegExp.exec(line) ?? [];
+      if (match) {
+        debug(`Conventional commit message: ${match}`);
+        lines[firstNotEmptyLine] = `${type}${scope || ''}: ${replaceMessageByPattern(
+          jiraTicket,
+          msg,
+          config.messagePattern,
+        )}`;
+      }
+    } else if (!line.includes(jiraTicket)) {
+      lines[firstNotEmptyLine] = replaceMessageByPattern(jiraTicket, line || '', config.messagePattern);
+    }
+  }
+
+  // Add jira ticket into the message in case of missing
+  if (lines.every((line) => !line.includes(jiraTicket))) {
+    lines[0] = replaceMessageByPattern(jiraTicket, lines[0] || '', config.messagePattern);
+  }
+
+  return lines.join('\n');
 }
 
 export type GitRevParseResult = {
@@ -116,52 +189,25 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
 
   // Read file with commit message
   try {
-    message = fs.readFileSync(messageFilePath, { encoding: 'utf-8' }).trim();
+    message = fs.readFileSync(messageFilePath, { encoding: 'utf-8' });
   } catch (ex) {
     throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
 
   debug(`Commit message: ${message}`);
 
-  // ignore everything after commentChar or the scissors comment, which present when doing a --verbose commit,
-  // or `git config commit.status true`
-  const messageSections = message.split('------------------------ >8 ------------------------')[0];
-  const lines = messageSections
-    .trim()
-    .split('\n')
-    .map((line) => line.trimLeft())
-    .filter((line) => !line.startsWith(config.commentChar));
-
-  const cleanMessage = lines.join('\n');
-
-  debug(`Lines: ${cleanMessage}`);
-
-  // Message was empty
-  if (cleanMessage.length === 0 && message === cleanMessage && !config.allowEmptyCommitMessage) {
+  if (isMessageEmpty(message, config) && !config.allowEmptyCommitMessage) {
     debug(`Commit message is empty. Skipping...`);
     return;
   }
 
-  if (config.isConventionalCommit) {
-    // In the first line should be special conventional format
-    const firstLine = lines[0] || '';
-    debug(`Finding conventional commit in: ${firstLine}`);
-    conventionalCommitRegExp.lastIndex = -1;
-    const [match, type, scope, msg] = conventionalCommitRegExp.exec(firstLine) ?? [];
-    if (match) {
-      debug(`Conventional commit message: ${match}`);
-      lines[0] = `${type}${scope || ''}: ${replaceMessageByPattern(jiraTicket, msg, config.messagePattern)}`;
-    }
-  }
+  const messageWithJiraTicket = insertJiraTicketIntoMessage(message, jiraTicket, config);
 
-  // Add jira ticket into the message in case of missing
-  if (lines.every((line) => !line.includes(jiraTicket))) {
-    lines[0] = replaceMessageByPattern(jiraTicket, lines[0] || '', config.messagePattern);
-  }
+  debug(messageWithJiraTicket);
 
   // Write message back to file
   try {
-    fs.writeFileSync(messageFilePath, lines.join('\n'), { encoding: 'utf-8' });
+    fs.writeFileSync(messageFilePath, messageWithJiraTicket, { encoding: 'utf-8' });
   } catch (ex) {
     throw new Error(`Unable to write the file "${messageFilePath}".`);
   }

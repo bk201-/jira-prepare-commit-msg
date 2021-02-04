@@ -151,7 +151,7 @@ and commit message is `fix(test)!: important changes` then at result will be `fi
 - [x] Lint
 - [x] Tests
   - [ ] Test for configuration
-- [ ] Don't clear commit message
+- [x] Don't clear commit message
 
 ## License
 

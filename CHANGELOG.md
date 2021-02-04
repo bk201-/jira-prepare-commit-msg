@@ -1,3 +1,10 @@
+### 1.5.0
+
+- [feature] Supports verbose commit `git commit -v`
+- [minor] Adds new tests
+- [minor] Bumps versions
+- [minor] Updates TODO list in README
+
 ### 1.4.3
 
 - [fix] Supports hyphenated single scope as supported by conventional commit
