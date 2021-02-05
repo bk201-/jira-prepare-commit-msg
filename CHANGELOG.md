@@ -1,3 +1,7 @@
+### 1.5.1
+
+- [minor] Changes EOL to LF
+
 ### 1.5.0
 
 - [feature] Supports verbose commit `git commit -v`
