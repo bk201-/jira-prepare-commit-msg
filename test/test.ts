@@ -112,3 +112,13 @@ test('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await exec('npm run cleanup:husky:4 && npm run prepare:husky:4', './', t);
   await testCommitMessage(imitateVerboseCommit, 'husky4', t);
 });
+
+test('husky5 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
+  await testCommitMessage(singleScopeMessage, 'husky5', t);
+  await exec('npm run cleanup:husky:5 && npm run prepare:husky:5', './', t);
+  await testCommitMessage(hyphenatedScopeMessage, 'husky5', t);
+  await exec('npm run cleanup:husky:5 && npm run prepare:husky:5', './', t);
+  await testCommitMessage(firstLineWithCommentMessage, 'husky5', t);
+  await exec('npm run cleanup:husky:5 && npm run prepare:husky:5', './', t);
+  await testCommitMessage(imitateVerboseCommit, 'husky5', t);
+});

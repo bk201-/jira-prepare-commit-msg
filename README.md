@@ -14,7 +14,17 @@ Install the package using NPM
 npm install husky jira-prepare-commit-msg --save-dev
 ```
 
-Inside your package.json add a standard husky npm script for the git hook:
+For Husky 5:
+
+Execute command
+
+```shell
+husky add .husky/prepare-commit-msg "npx jira-prepare-commit-msg $1"
+```
+
+For Husky 2-4:
+
+Inside your package.json add a standard husky npm script for the git hook
 
 ```json
 {

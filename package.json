@@ -1,6 +1,6 @@
 {
   "name": "jira-prepare-commit-msg",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Husky Git hook to add JIRA ticket ID into the commit message",
   "author": "Dmitry Shilov",
   "bin": "./bin/index.js",
@@ -25,9 +25,9 @@
     "cosmiconfig": "^7.0.0"
   },
   "devDependencies": {
-    "@types/node": "^14.14.24",
-    "@typescript-eslint/eslint-plugin": "^4.14.2",
-    "@typescript-eslint/parser": "^4.14.2",
+    "@types/node": "^14.14.25",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "ava": "^3.15.0",
     "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.2.0",
@@ -41,7 +41,7 @@
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
     "ts-node": "^9.1.1",
-    "typescript": "^4.1.3"
+    "typescript": "^4.1.4"
   },
   "engines": {
     "node": ">=10.13"
@@ -64,11 +64,13 @@
     "prepare:husky:2": "cd ./test/husky2 && git init && git checkout -b JIRA-4321-test-husky2 && npm i",
     "prepare:husky:3": "cd ./test/husky3 && git init && git checkout -b JIRA-4321-test-husky3 && npm i",
     "prepare:husky:4": "cd ./test/husky4 && git init && git checkout -b JIRA-4321-test-husky4 && npm i",
+    "prepare:husky:5": "cd ./test/husky5 && git init && git checkout -b JIRA-4321-test-husky5 && npm i",
     "cleanup:husky:2": "cd ./test/husky2 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
     "cleanup:husky:3": "cd ./test/husky3 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
     "cleanup:husky:4": "cd ./test/husky4 && rimraf .git && rimraf node_modules && rimraf package-lock.json",
-    "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3 && npm run prepare:husky:4",
+    "cleanup:husky:5": "cd ./test/husky5 && rimraf .git && rimraf node_modules && rimraf package-lock.json && rimraf .husky",
+    "pretest": "npm run prepare:husky:2 && npm run prepare:husky:3 && npm run prepare:husky:4 && npm run prepare:husky:5",
     "test": "npm run compile && ava test/test.ts",
-    "posttest": "npm run cleanup:husky:2 && npm run cleanup:husky:3 && npm run cleanup:husky:4"
+    "posttest": "npm run cleanup:husky:2 && npm run cleanup:husky:3 && npm run cleanup:husky:4 && npm run cleanup:husky:5"
   }
 }

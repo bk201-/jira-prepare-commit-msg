@@ -1,3 +1,7 @@
+### 1.5.2
+
+- [feature] Supports Husky 5
+
 ### 1.5.1
 
 - [minor] Changes EOL to LF

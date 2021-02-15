@@ -11,7 +11,17 @@ const gitVerboseStatusSeparator = '------------------------ >8 -----------------
 function getMsgFilePath(index = 0): string {
   debug('getMsgFilePath');
 
-  // Husky stashes git hook parameters $* into a HUSKY_GIT_PARAMS env var.
+  // It is Husky 5
+  if (process.env.HUSKY_GIT_PARAMS === undefined) {
+    const messageFilePath = process.argv.find((arg) => arg.includes('.git'));
+    if (messageFilePath) {
+      return messageFilePath;
+    } else {
+      throw new Error(`You are using Husky 5. Please add $1 to jira-pre-commit-msg's parameters.`);
+    }
+  }
+
+  // Husky 2-4 stashes git hook parameters $* into a HUSKY_GIT_PARAMS env var.
   const gitParams = process.env.HUSKY_GIT_PARAMS || '';
 
   // Throw a friendly error if the git params environment variable can't be found – the user may be missing Husky.

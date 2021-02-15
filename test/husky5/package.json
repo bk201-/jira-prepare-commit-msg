@@ -1,0 +1,15 @@
+{
+  "name": "husky5-test",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "husky": "^5.0.0"
+  },
+  "scripts": {
+    "postinstall": "husky install && husky add .husky/prepare-commit-msg \"node ../../bin/index.js --verbose\""
+  },
+  "jira-prepare-commit-msg": {
+    "isConventionalCommit": true,
+    "messagePattern": "[$J]. $M"
+  }
+}
