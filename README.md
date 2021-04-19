@@ -19,7 +19,7 @@ For Husky 5:
 Execute command
 
 ```shell
-husky add .husky/prepare-commit-msg "npx jira-prepare-commit-msg $1"
+husky add .husky/prepare-commit-msg 'npx jira-prepare-commit-msg $1'
 ```
 
 For Husky 2-4:
