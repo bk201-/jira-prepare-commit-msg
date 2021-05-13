@@ -6,6 +6,7 @@ import * as childProcess from 'child_process';
 interface CommitMessageToTest {
   initialMessage: string[];
   expectedMessage: string;
+  flags?: string;
 }
 
 const singleScopeMessage: CommitMessageToTest = {
@@ -78,9 +79,9 @@ async function testCommitMessage(
 
   const stdout = await exec('git log', cwd, t);
   const index = stdout.search(/(\[[A-Z]+-\d+])/i);
-  t.is(index > -1, true);
+  t.is(index > -1, true, `Expected message: ${commitMessageToTest.expectedMessage}`);
   const index2 = stdout.includes(commitMessageToTest.expectedMessage);
-  t.is(index2, true);
+  t.is(index2, true, `Expected message: ${commitMessageToTest.expectedMessage}`);
 }
 
 test('husky2 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {

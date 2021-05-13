@@ -1,3 +1,10 @@
+### 1.6.0
+
+- [feature] Based on [issue](https://github.com/bk201-/jira-prepare-commit-msg/issues/319) JIRA ticket will be either
+  - injected into commit message as a comment if the user doesn't write one `git commit`
+  - ignored without the flag `config.allowEmptyCommitMessage` if the user writes empty message `git commit -m ""`
+- [minor] Bumps versions
+
 ### 1.5.2
 
 - [feature] Supports Husky 5

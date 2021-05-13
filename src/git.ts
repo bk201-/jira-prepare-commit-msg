@@ -4,6 +4,14 @@ import * as cp from 'child_process';
 import { JPCMConfig } from './config';
 import { debug } from './log';
 
+interface MessageInfo {
+  originalMessage: string;
+  cleanMessage: string;
+  hasAnyText: boolean;
+  hasUserText: boolean;
+  hasVerboseText: boolean;
+}
+
 // eslint-disable-next-line max-len
 const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
 const gitVerboseStatusSeparator = '------------------------ >8 ------------------------';
@@ -44,8 +52,10 @@ function replaceMessageByPattern(jiraTicket: string, message: string, pattern: s
   return result;
 }
 
-function isMessageEmpty(message: string, config: JPCMConfig): boolean {
-  const messageSections = message.split('------------------------ >8 ------------------------')[0];
+function getMessageInfo(message: string, config: JPCMConfig): MessageInfo {
+  debug(`Original commit message: ${message}`);
+
+  const messageSections = message.split(gitVerboseStatusSeparator)[0];
   const lines = messageSections
     .trim()
     .split('\n')
@@ -54,10 +64,18 @@ function isMessageEmpty(message: string, config: JPCMConfig): boolean {
 
   const cleanMessage = lines.join('\n').trim();
 
-  return cleanMessage.length === 0 && message === cleanMessage;
+  debug(`Clean commit message (${cleanMessage.length}): ${cleanMessage}`);
+
+  return {
+    originalMessage: message,
+    cleanMessage: cleanMessage,
+    hasAnyText: message.length !== 0,
+    hasUserText: cleanMessage.length !== 0,
+    hasVerboseText: message.includes(gitVerboseStatusSeparator),
+  };
 }
 
-function findFirstNotEmptyLineIndex(lines: string[], config: JPCMConfig): number {
+function findFirstLineToInsert(lines: string[], config: JPCMConfig): number {
   let firstNotEmptyLine = -1;
 
   for (let i = 0; i < lines.length; ++i) {
@@ -82,35 +100,59 @@ function findFirstNotEmptyLineIndex(lines: string[], config: JPCMConfig): number
   return firstNotEmptyLine;
 }
 
-function insertJiraTicketIntoMessage(message: string, jiraTicket: string, config: JPCMConfig): string {
+function insertJiraTicketIntoMessage(messageInfo: MessageInfo, jiraTicket: string, config: JPCMConfig): string {
+  const message = messageInfo.originalMessage;
   const lines = message.split('\n').map((line) => line.trimLeft());
-  const firstNotEmptyLine = findFirstNotEmptyLineIndex(lines, config);
 
-  debug(`First not empty line is: ${firstNotEmptyLine > -1 ? lines[firstNotEmptyLine] : ''} (${firstNotEmptyLine})`);
+  if (!messageInfo.hasUserText) {
+    debug(`User didn't write the message. Allow empty commit is ${String(config.allowEmptyCommitMessage)}`);
 
-  if (firstNotEmptyLine !== -1) {
-    const line = lines[firstNotEmptyLine];
+    const preparedMessage = replaceMessageByPattern(jiraTicket, '', config.messagePattern);
 
-    if (config.isConventionalCommit) {
-      debug(`Finding conventional commit in: ${line}`);
-      conventionalCommitRegExp.lastIndex = -1;
-      const [match, type, scope, msg] = conventionalCommitRegExp.exec(line) ?? [];
-      if (match) {
-        debug(`Conventional commit message: ${match}`);
-        lines[firstNotEmptyLine] = `${type}${scope || ''}: ${replaceMessageByPattern(
-          jiraTicket,
-          msg,
-          config.messagePattern,
-        )}`;
+    if (messageInfo.hasAnyText) {
+      const insertedMessage = config.allowEmptyCommitMessage
+        ? preparedMessage
+        : `# ${preparedMessage}\n` +
+          '# JIRA prepare commit msg > ' +
+          'Please uncomment the line above if you want to insert JIRA ticket into commit message';
+
+      lines.unshift(insertedMessage);
+    } else {
+      if (config.allowEmptyCommitMessage) {
+        lines.unshift(preparedMessage);
+      } else {
+        debug(`Commit message is empty. Skipping...`);
       }
-    } else if (!line.includes(jiraTicket)) {
-      lines[firstNotEmptyLine] = replaceMessageByPattern(jiraTicket, line || '', config.messagePattern);
     }
-  }
+  } else {
+    const firstLineToInsert = findFirstLineToInsert(lines, config);
 
-  // Add jira ticket into the message in case of missing
-  if (lines.every((line) => !line.includes(jiraTicket))) {
-    lines[0] = replaceMessageByPattern(jiraTicket, lines[0] || '', config.messagePattern);
+    debug(`First line to insert is: ${firstLineToInsert > -1 ? lines[firstLineToInsert] : ''} (${firstLineToInsert})`);
+
+    if (firstLineToInsert !== -1) {
+      const line = lines[firstLineToInsert];
+
+      if (config.isConventionalCommit) {
+        debug(`Finding conventional commit in: ${line}`);
+        conventionalCommitRegExp.lastIndex = -1;
+        const [match, type, scope, msg] = conventionalCommitRegExp.exec(line) ?? [];
+        if (match) {
+          debug(`Conventional commit message: ${match}`);
+          lines[firstLineToInsert] = `${type}${scope || ''}: ${replaceMessageByPattern(
+            jiraTicket,
+            msg,
+            config.messagePattern,
+          )}`;
+        }
+      } else if (!line.includes(jiraTicket)) {
+        lines[firstLineToInsert] = replaceMessageByPattern(jiraTicket, line || '', config.messagePattern);
+      }
+    }
+
+    // Add jira ticket into the message in case of missing
+    if (lines.every((line) => !line.includes(jiraTicket))) {
+      lines[0] = replaceMessageByPattern(jiraTicket, lines[0] || '', config.messagePattern);
+    }
   }
 
   return lines.join('\n');
@@ -204,14 +246,8 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
     throw new Error(`Unable to read the file "${messageFilePath}".`);
   }
 
-  debug(`Commit message: ${message}`);
-
-  if (isMessageEmpty(message, config) && !config.allowEmptyCommitMessage) {
-    debug(`Commit message is empty. Skipping...`);
-    return;
-  }
-
-  const messageWithJiraTicket = insertJiraTicketIntoMessage(message, jiraTicket, config);
+  const messageInfo = getMessageInfo(message, config);
+  const messageWithJiraTicket = insertJiraTicketIntoMessage(messageInfo, jiraTicket, config);
 
   debug(messageWithJiraTicket);
 
