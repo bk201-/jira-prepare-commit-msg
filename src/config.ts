@@ -10,7 +10,7 @@ export type JPCMConfig = {
 };
 
 const defaultConfig = {
-  messagePattern: '[$J]\n$M',
+  messagePattern: '[$J] $M',
   jiraTicketPattern: '([A-Z]+-\\d+)',
   commentChar: '#',
   isConventionalCommit: false,
