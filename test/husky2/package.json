@@ -12,6 +12,7 @@
   },
   "jira-prepare-commit-msg": {
     "isConventionalCommit": true,
-    "messagePattern": "[$J]. $M"
+    "messagePattern": "[$J]. $M",
+    "allowEmptyCommitMessage": true
   }
 }
