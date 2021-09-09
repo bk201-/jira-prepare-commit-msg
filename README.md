@@ -6,12 +6,21 @@ The husky command to add JIRA ticket ID into the commit message if it is missed.
 
 The JIRA ticket ID is taken from a git branch name.
 
+## Why?
+
+Installing Jira prepare commit msg hook into your project will mean everyone contributing code to your project will automatically tag each commit with
+it's associated issue key based off the branch name. 
+
+So if your branch name is `feature/TEST-123-new-feature`, then when you commit with a message `"initial commit"` it will automatically become `"TEST-123: initial commit"`.
+
+Why would you want this? Well, Jira has many hidden goodies, and this is one of them! If you include an issue key in your commit messages AND you have your deployment pipeline connected to Jira this will unlock many bonus features, such as the Deployments view, Cycle time report, Deployment frequency report and I've heard many more features are coming soon!
+
 ## Installation
 
 Install the package using NPM
 
 ```bash
-npm install husky jira-prepare-commit-msg --save-dev
+npm install husky jira-prepare-commit-msg --save-dev && npx husky install
 ```
 
 For Husky 5:
@@ -19,7 +28,7 @@ For Husky 5:
 Execute command
 
 ```shell
-husky add .husky/prepare-commit-msg 'npx jira-prepare-commit-msg $1'
+npx husky add .husky/prepare-commit-msg 'npx jira-prepare-commit-msg $1'
 ```
 
 For Husky 2-4:
