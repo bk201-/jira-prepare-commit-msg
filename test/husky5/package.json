@@ -7,10 +7,5 @@
   },
   "scripts": {
     "postinstall": "husky install && husky add .husky/prepare-commit-msg \"node ../../bin/index.js --verbose \"$1\"\""
-  },
-  "jira-prepare-commit-msg": {
-    "isConventionalCommit": true,
-    "messagePattern": "[$J]. $M",
-    "allowEmptyCommitMessage": true
   }
 }

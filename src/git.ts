@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
 import { JPCMConfig } from './config';
-import { debug } from './log';
+import { debug, log } from './log';
 
 interface MessageInfo {
   originalMessage: string;
@@ -12,12 +12,29 @@ interface MessageInfo {
   hasVerboseText: boolean;
 }
 
-// eslint-disable-next-line max-len
-const conventionalCommitRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
+const conventionalCommitRegExp =
+  /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
 const gitVerboseStatusSeparator = '------------------------ >8 ------------------------';
 
-function getMsgFilePath(index = 0): string {
+function getMsgFilePath(gitRoot: string, index = 0): string {
   debug('getMsgFilePath');
+
+  if (gitRoot.length > 0) {
+    // At first looking into this path, then if it's empty trying other ways
+    if (!path.isAbsolute(gitRoot)) {
+      const cwd = process.cwd();
+
+      log(`Resolving .git path from ${cwd}`);
+
+      gitRoot = path.resolve(cwd, gitRoot);
+    }
+
+    if (!gitRoot.includes('.git')) {
+      gitRoot = path.join(gitRoot, '.git');
+    }
+
+    return path.join(gitRoot, 'COMMIT_EDITMSG');
+  }
 
   // It is Husky 5
   if (process.env.HUSKY_GIT_PARAMS === undefined) {
@@ -138,11 +155,11 @@ function insertJiraTicketIntoMessage(messageInfo: MessageInfo, jiraTicket: strin
         const [match, type, scope, msg] = conventionalCommitRegExp.exec(line) ?? [];
         if (match) {
           debug(`Conventional commit message: ${match}`);
-          lines[firstLineToInsert] = `${type}${scope || ''}: ${replaceMessageByPattern(
-            jiraTicket,
-            msg,
-            config.messagePattern,
-          )}`;
+
+          if (!msg.includes(jiraTicket)) {
+            const replacedMessage = replaceMessageByPattern(jiraTicket, msg, config.messagePattern);
+            lines[firstLineToInsert] = `${type}${scope || ''}: ${replacedMessage}`;
+          }
         }
       } else if (!line.includes(jiraTicket)) {
         lines[firstLineToInsert] = replaceMessageByPattern(jiraTicket, line || '', config.messagePattern);
@@ -236,7 +253,7 @@ export function getJiraTicket(branchName: string, config: JPCMConfig): string {
 export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
   debug('writeJiraTicket');
 
-  const messageFilePath = getMsgFilePath();
+  const messageFilePath = getMsgFilePath(config.gitRoot);
   let message;
 
   // Read file with commit message

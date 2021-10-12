@@ -7,6 +7,7 @@ export type JPCMConfig = {
   commentChar: string; // Default comment char in the message
   isConventionalCommit: boolean; // Support https://www.conventionalcommits.org
   allowEmptyCommitMessage: boolean;
+  gitRoot: string;
 };
 
 const defaultConfig = {
@@ -15,6 +16,7 @@ const defaultConfig = {
   commentChar: '#',
   isConventionalCommit: false,
   allowEmptyCommitMessage: false,
+  gitRoot: '',
 } as JPCMConfig;
 
 function resolveConfig(configPath: string): string {

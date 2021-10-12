@@ -64,7 +64,8 @@ See [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for more details
     "jiraTicketPattern": "([A-Z]+-\\d+)",
     "commentChar": "#",
     "isConventionalCommit": false,
-    "allowEmptyCommitMessage": false
+    "allowEmptyCommitMessage": false,
+    "gitRoot": ""
   }
 }
 ```
@@ -131,6 +132,24 @@ The commit message might be empty after cleanup or using `-m ""`, `jira-prepare-
     "allowEmptyCommitMessage": true
   }
 }
+```
+
+#### Git root
+
+The git root folder might be set. It is either absolute path or relative path which will be resolved from `cwd`
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "gitRoot": "./../../"
+  }
+}
+```
+
+The package will search commit message so: 
+```javascript
+const pathToGit = path.resolve(cwd, './../../');
+const pathToCommitMessage = path.join(pathToGit, '.git', 'COMMIT_EDITMSG');
 ```
 
 #### Conventional commit

@@ -2,11 +2,13 @@ import test, { ExecutionContext } from 'ava';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as childProcess from 'child_process';
+import { JPCMConfig } from '../src/config';
 
 interface CommitMessageToTest {
   initialMessage: string[];
   expectedMessage: string;
   flags?: string;
+  config?: Partial<JPCMConfig>;
 }
 
 const singleScopeMessage: CommitMessageToTest = {
@@ -39,6 +41,21 @@ const imitateVerboseCommit: CommitMessageToTest = {
   expectedMessage: '[JIRA-4321].',
 };
 
+const conventionalCommitIncludesTicket = {
+  initialMessage: ['feat: [JIRA-4321] Finally solved that problem!'],
+  expectedMessage: 'feat: [JIRA-4321] Finally solved that problem!',
+};
+
+const gitRootIsSet = {
+  initialMessage: ['feat: [JIRA-4321] Finally solved that problem!'],
+  expectedMessage: 'feat: [JIRA-4321] Finally solved that problem!',
+  config: {
+    isConventionalCommit: true,
+    messagePattern: '[$J]. $M',
+    gitRoot: './.git',
+  },
+};
+
 function exec(cmd: string, cwd: string, t: ExecutionContext): Promise<string> {
   return new Promise((resolve, reject) => {
     console.log(`${t.title}. Exec ${cmd}`);
@@ -67,59 +84,59 @@ async function testCommitMessage(
   await exec('git config user.name "Your Name"', cwd, t);
   await exec('git add .gitignore', cwd, t);
 
+  if (commitMessageToTest.config) {
+    const pathToConfig = path.join(cwd, '.jirapreparecommitmsgrc');
+    fs.writeFileSync(pathToConfig, JSON.stringify(commitMessageToTest.config));
+  }
+
   // Because I can't imitate multiline commit in Windows CLI, I decided to use file
-  const pathToTempFile = path.join(cwd, '.git', 'preparedCommitMessage');
+  const pathToTempFile = path.join(cwd, '.git', 'COMMIT_EDITMSG');
   fs.writeFileSync(pathToTempFile, commitMessageToTest.initialMessage.join('\n'));
 
-  await exec(
-    `git commit --cleanup=strip ${commitMessageToTest.initialMessage.length !== 0 ? `-F ${pathToTempFile}` : '-m ""'}`,
-    cwd,
-    t,
-  );
+  const commitMsg = commitMessageToTest.initialMessage.length !== 0 ? `-F ${pathToTempFile}` : '-m ""';
+  await exec(`git commit --cleanup=strip ${commitMsg}`, cwd, t);
 
   const stdout = await exec('git log', cwd, t);
   const index = stdout.search(/(\[[A-Z]+-\d+])/i);
   t.is(index > -1, true, `Expected message: ${commitMessageToTest.expectedMessage}`);
   const index2 = stdout.includes(commitMessageToTest.expectedMessage);
   t.is(index2, true, `Expected message: ${commitMessageToTest.expectedMessage}`);
+
+  await exec(`git update-ref -d HEAD`, cwd, t);
 }
 
 test('husky2 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky2', t);
-  await exec('npm run cleanup:husky:2 && npm run prepare:husky:2', './', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky2', t);
-  await exec('npm run cleanup:husky:2 && npm run prepare:husky:2', './', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky2', t);
-  await exec('npm run cleanup:husky:2 && npm run prepare:husky:2', './', t);
   await testCommitMessage(imitateVerboseCommit, 'husky2', t);
+  await testCommitMessage(conventionalCommitIncludesTicket, 'husky2', t);
+  await testCommitMessage(gitRootIsSet, 'husky2', t);
 });
 
 test('husky3 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky3', t);
-  await exec('npm run cleanup:husky:3 && npm run prepare:husky:3', './', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky3', t);
-  await exec('npm run cleanup:husky:3 && npm run prepare:husky:3', './', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky3', t);
-  await exec('npm run cleanup:husky:3 && npm run prepare:husky:3', './', t);
   await testCommitMessage(imitateVerboseCommit, 'husky3', t);
+  await testCommitMessage(conventionalCommitIncludesTicket, 'husky3', t);
+  await testCommitMessage(gitRootIsSet, 'husky3', t);
 });
 
 test('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky4', t);
-  await exec('npm run cleanup:husky:4 && npm run prepare:husky:4', './', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky4', t);
-  await exec('npm run cleanup:husky:4 && npm run prepare:husky:4', './', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky4', t);
-  await exec('npm run cleanup:husky:4 && npm run prepare:husky:4', './', t);
   await testCommitMessage(imitateVerboseCommit, 'husky4', t);
+  await testCommitMessage(conventionalCommitIncludesTicket, 'husky4', t);
+  await testCommitMessage(gitRootIsSet, 'husky4', t);
 });
 
 test('husky5 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky5', t);
-  await exec('npm run cleanup:husky:5 && npm run prepare:husky:5', './', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky5', t);
-  await exec('npm run cleanup:husky:5 && npm run prepare:husky:5', './', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky5', t);
-  await exec('npm run cleanup:husky:5 && npm run prepare:husky:5', './', t);
   await testCommitMessage(imitateVerboseCommit, 'husky5', t);
+  await testCommitMessage(conventionalCommitIncludesTicket, 'husky5', t);
+  await testCommitMessage(gitRootIsSet, 'husky5', t);
 });

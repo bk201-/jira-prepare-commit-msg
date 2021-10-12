@@ -1,3 +1,16 @@
+### 1.6.2
+
+- [feature] New config: gitRoot. It might be either absolute path or relative path which will be resolved from `cwd`
+- [minor] Adds new tests
+- [minor] Bumps versions
+- [minor] Updates README
+
+### 1.6.1
+
+- [feature] The new line was removed from the commit message pattern
+- [minor] Bumps versions
+- [minor] Updates README
+
 ### 1.6.0
 
 - [feature] Based on [issue](https://github.com/bk201-/jira-prepare-commit-msg/issues/319) JIRA ticket will be either

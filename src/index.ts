@@ -17,8 +17,12 @@ import { error, log } from './log';
     log(`The JIRA ticket ID is: ${ticket}`);
 
     git.writeJiraTicket(ticket, config);
-  } catch (err) {
-    error(err);
+  } catch (err: unknown) {
+    if (typeof err === 'string') {
+      error(err);
+    } else {
+      error(String(err));
+    }
   }
 
   log('done');
