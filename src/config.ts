@@ -8,9 +8,13 @@ export type JPCMConfig = {
   isConventionalCommit: boolean; // Support https://www.conventionalcommits.org
   allowEmptyCommitMessage: boolean;
   gitRoot: string;
+  ignoredBranchesPattern: string;
+  ignoreBranchesMissingTickets: boolean;
 };
 
 const defaultConfig = {
+  ignoredBranchesPattern: '',
+  ignoreBranchesMissingTickets: false,
   messagePattern: '[$J] $M',
   jiraTicketPattern: '([A-Z]+-\\d+)',
   commentChar: '#',

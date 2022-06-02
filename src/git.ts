@@ -243,6 +243,10 @@ export function getJiraTicket(branchName: string, config: JPCMConfig): string {
   const matched = jiraIdPattern.exec(branchName);
   const jiraTicket = matched && matched[0];
 
+  if (config.ignoreBranchesMissingTickets && !jiraTicket) {
+    return '';
+  }
+
   if (!jiraTicket) {
     throw new Error('The JIRA ticket ID not found');
   }
