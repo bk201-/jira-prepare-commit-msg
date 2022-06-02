@@ -39,6 +39,9 @@ const imitateVerboseCommit: CommitMessageToTest = {
     '# ------------------------ >8 ------------------------',
   ],
   expectedMessage: '[JIRA-4321].',
+  config: {
+    allowEmptyCommitMessage: true,
+  },
 };
 
 const conventionalCommitIncludesTicket = {
@@ -82,11 +85,17 @@ async function testCommitMessage(
   const cwd = path.join(__dirname, folder);
   await exec('git config user.email "you@example.com"', cwd, t);
   await exec('git config user.name "Your Name"', cwd, t);
-  await exec('git add .gitignore', cwd, t);
+  await exec('git add .gitignore -f', cwd, t);
 
   if (commitMessageToTest.config) {
     const pathToConfig = path.join(cwd, '.jirapreparecommitmsgrc');
-    fs.writeFileSync(pathToConfig, JSON.stringify(commitMessageToTest.config));
+    fs.writeFileSync(
+      pathToConfig,
+      JSON.stringify({
+        ...JSON.parse(fs.readFileSync(pathToConfig).toString('utf-8')),
+        ...commitMessageToTest.config,
+      }),
+    );
   }
 
   // Because I can't imitate multiline commit in Windows CLI, I decided to use file
@@ -105,7 +114,13 @@ async function testCommitMessage(
   await exec(`git update-ref -d HEAD`, cwd, t);
 }
 
-test('husky2 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
+test.serial.afterEach.always(async (t) => {
+  for (let i of [2, 3, 4, 5]) {
+    await exec(`git checkout ${path.join('.', 'husky' + i, '.jirapreparecommitmsgrc')}`, __dirname, t);
+  }
+});
+
+test.serial('husky2 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky2', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky2', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky2', t);
@@ -114,7 +129,7 @@ test('husky2 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(gitRootIsSet, 'husky2', t);
 });
 
-test('husky3 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
+test.serial('husky3 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky3', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky3', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky3', t);
@@ -122,8 +137,7 @@ test('husky3 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(conventionalCommitIncludesTicket, 'husky3', t);
   await testCommitMessage(gitRootIsSet, 'husky3', t);
 });
-
-test('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
+test.serial('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky4', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky4', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky4', t);
@@ -131,8 +145,7 @@ test('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(conventionalCommitIncludesTicket, 'husky4', t);
   await testCommitMessage(gitRootIsSet, 'husky4', t);
 });
-
-test('husky5 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
+test.serial('husky5 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
   await testCommitMessage(singleScopeMessage, 'husky5', t);
   await testCommitMessage(hyphenatedScopeMessage, 'husky5', t);
   await testCommitMessage(firstLineWithCommentMessage, 'husky5', t);
