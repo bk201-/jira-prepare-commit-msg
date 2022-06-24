@@ -65,7 +65,9 @@ See [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for more details
     "commentChar": "#",
     "isConventionalCommit": false,
     "allowEmptyCommitMessage": false,
-    "gitRoot": ""
+    "gitRoot": "",
+    "ignoredBranchesPattern": "^$",
+    "ignoreBranchesMissingTickets": false
   }
 }
 ```
@@ -142,6 +144,30 @@ The git root folder might be set. It is either absolute path or relative path wh
 {
   "jira-prepare-commit-msg": {
     "gitRoot": "./../../"
+  }
+}
+```
+
+#### Ignoring branches
+
+Branches can be ignored and skipped by regex pattern string
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "ignoredBranchesPattern": "^main|develop|(maint-.*)$"
+  }
+}
+```
+
+#### Silently ignore any branch that does not have a jira ticket in it
+
+Be silent and skip any branch with missing jira ticket
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "ignoreBranchesMissingTickets": true
   }
 }
 ```
