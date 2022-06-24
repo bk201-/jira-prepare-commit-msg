@@ -84,8 +84,8 @@ function getMessageInfo(message: string, config: JPCMConfig): MessageInfo {
   debug(`Clean commit message (${cleanMessage.length}): ${cleanMessage}`);
 
   return {
+    cleanMessage,
     originalMessage: message,
-    cleanMessage: cleanMessage,
     hasAnyText: message.length !== 0,
     hasUserText: cleanMessage.length !== 0,
     hasVerboseText: message.includes(gitVerboseStatusSeparator),
