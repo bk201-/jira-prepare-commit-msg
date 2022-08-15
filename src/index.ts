@@ -23,7 +23,7 @@ import { error, log, debug } from './log';
 
     log(`The JIRA ticket ID is: ${ticket}`);
 
-    git.writeJiraTicket(ticket, config);
+    git.writeJiraTicket(ticket, { ...config, gitRoot });
   } catch (err: unknown) {
     if (typeof err === 'string') {
       error(err);
