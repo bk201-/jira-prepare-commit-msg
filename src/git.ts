@@ -64,7 +64,7 @@ function escapeReplacement(str: string): string {
 }
 
 function replaceMessageByPattern(jiraTicket: string, message: string, pattern: string): string {
-  const result = pattern.replace('$J', escapeReplacement(jiraTicket)).replace('$M', escapeReplacement(message));
+  const result = pattern.replace(/\$J/g, escapeReplacement(jiraTicket)).replace(/\$M/g, escapeReplacement(message));
   debug(`Replacing message: ${result}`);
   return result;
 }
