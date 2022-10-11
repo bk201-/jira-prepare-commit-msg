@@ -13,7 +13,7 @@ interface MessageInfo {
 }
 
 const conventionalCommitRegExp =
-  /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
+  /^([a-z]+)(\([a-z0-9-_ ]+\))?!?: ([\w \S]+)$/g;
 const gitVerboseStatusSeparator = '------------------------ >8 ------------------------';
 
 function getMsgFilePath(gitRoot: string, index = 0): string {
