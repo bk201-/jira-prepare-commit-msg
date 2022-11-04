@@ -12,8 +12,7 @@ interface MessageInfo {
   hasVerboseText: boolean;
 }
 
-const conventionalCommitRegExp =
-  /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z- ]+\)!?)?: ([\w \S]+)$/g;
+const conventionalCommitRegExp = /^([a-z]+)(\([a-z0-9.,-_ ]+\))?!?: ([\w \S]+)$/g;
 const gitVerboseStatusSeparator = '------------------------ >8 ------------------------';
 
 function getMsgFilePath(gitRoot: string, index = 0): string {
@@ -63,9 +62,15 @@ function escapeReplacement(str: string): string {
   return str.replace(/[$]/, '$$$$'); // In replacement to escape $ needs $$
 }
 
-function replaceMessageByPattern(jiraTicket: string, message: string, pattern: string): string {
-  const result = pattern.replace('$J', escapeReplacement(jiraTicket)).replace('$M', escapeReplacement(message));
+function replaceMessageByPattern(jiraTicket: string, message: string, pattern: string, replaceAll: boolean): string {
+  const jiraTicketRegExp = new RegExp('\\$J', replaceAll ? 'g' : '');
+  const messageRegExp = new RegExp('\\$M', replaceAll ? 'g' : '');
+  const result = pattern
+    .replace(jiraTicketRegExp, escapeReplacement(jiraTicket))
+    .replace(messageRegExp, escapeReplacement(message));
+
   debug(`Replacing message: ${result}`);
+
   return result;
 }
 
@@ -124,7 +129,12 @@ function insertJiraTicketIntoMessage(messageInfo: MessageInfo, jiraTicket: strin
   if (!messageInfo.hasUserText) {
     debug(`User didn't write the message. Allow empty commit is ${String(config.allowEmptyCommitMessage)}`);
 
-    const preparedMessage = replaceMessageByPattern(jiraTicket, '', config.messagePattern);
+    const preparedMessage = replaceMessageByPattern(
+      jiraTicket,
+      '',
+      config.messagePattern,
+      config.allowReplaceAllOccurrences,
+    );
 
     if (messageInfo.hasAnyText) {
       const insertedMessage = config.allowEmptyCommitMessage
@@ -157,18 +167,33 @@ function insertJiraTicketIntoMessage(messageInfo: MessageInfo, jiraTicket: strin
           debug(`Conventional commit message: ${match}`);
 
           if (!msg.includes(jiraTicket)) {
-            const replacedMessage = replaceMessageByPattern(jiraTicket, msg, config.messagePattern);
+            const replacedMessage = replaceMessageByPattern(
+              jiraTicket,
+              msg,
+              config.messagePattern,
+              config.allowReplaceAllOccurrences,
+            );
             lines[firstLineToInsert] = `${type}${scope || ''}: ${replacedMessage}`;
           }
         }
       } else if (!line.includes(jiraTicket)) {
-        lines[firstLineToInsert] = replaceMessageByPattern(jiraTicket, line || '', config.messagePattern);
+        lines[firstLineToInsert] = replaceMessageByPattern(
+          jiraTicket,
+          line || '',
+          config.messagePattern,
+          config.allowReplaceAllOccurrences,
+        );
       }
     }
 
     // Add jira ticket into the message in case of missing
     if (lines.every((line) => !line.includes(jiraTicket))) {
-      lines[0] = replaceMessageByPattern(jiraTicket, lines[0] || '', config.messagePattern);
+      lines[0] = replaceMessageByPattern(
+        jiraTicket,
+        lines[0] || '',
+        config.messagePattern,
+        config.allowReplaceAllOccurrences,
+      );
     }
   }
 
@@ -180,10 +205,21 @@ export type GitRevParseResult = {
   gitCommonDir: string;
 };
 
-export function gitRevParse(cwd = process.cwd()): GitRevParseResult {
+export function gitRevParse(cwd = process.cwd(), gitRoot = ''): GitRevParseResult {
+  const args = [];
+
+  // If git root is specified, checking existing work tree
+  if (gitRoot !== '' && gitRoot !== '.') {
+    log(`Git root is specified as ${gitRoot}`);
+
+    args.push('--git-dir', gitRoot);
+  }
+
+  args.push('rev-parse', '--show-prefix', '--git-common-dir');
+
   // https://github.com/typicode/husky/issues/580
   // https://github.com/typicode/husky/issues/587
-  const { status, stderr, stdout } = cp.spawnSync('git', ['rev-parse', '--show-prefix', '--git-common-dir'], { cwd });
+  const { status, stderr, stdout } = cp.spawnSync('git', args, { cwd, encoding: 'utf-8' });
 
   if (status !== 0) {
     throw new Error(stderr.toString());
@@ -199,12 +235,12 @@ export function gitRevParse(cwd = process.cwd()): GitRevParseResult {
   return { prefix, gitCommonDir };
 }
 
-export function getRoot(): string {
+export function getRoot(gitRoot: string): string {
   debug('getRoot');
 
   const cwd = process.cwd();
 
-  const { gitCommonDir } = gitRevParse(cwd);
+  const { gitCommonDir } = gitRevParse(cwd, gitRoot);
 
   // Git rev-parse returns unknown options as is.
   // If we get --absolute-git-dir in the output,
@@ -218,36 +254,36 @@ export function getRoot(): string {
   return path.resolve(cwd, gitCommonDir);
 }
 
-export async function getBranchName(gitRoot: string): Promise<string> {
+export function getBranchName(gitRoot: string): string {
   debug('gitBranchName');
 
-  return new Promise((resolve, reject) => {
-    cp.exec(`git --git-dir="${gitRoot}" symbolic-ref --short HEAD`, { encoding: 'utf-8' }, (err, stdout, stderr) => {
-      if (err) {
-        return reject(err);
-      }
+  const cwd = process.cwd();
+  const args = [];
 
-      if (stderr) {
-        return reject(new Error(String(stderr)));
-      }
+  // If git root is specified, checking existing work tree
+  if (gitRoot !== '' && gitRoot !== '.') {
+    args.push('--git-dir', gitRoot);
+  }
 
-      resolve(String(stdout).trim());
-    });
-  });
+  args.push('symbolic-ref', '--short', 'HEAD');
+
+  const { status, stderr, stdout } = cp.spawnSync('git', args, { cwd, encoding: 'utf-8' });
+
+  if (status !== 0) {
+    throw new Error(stderr.toString());
+  }
+
+  return stdout.toString().trim();
 }
 
-export function getJiraTicket(branchName: string, config: JPCMConfig): string {
+export function getJiraTicket(branchName: string, config: JPCMConfig): string | null {
   debug('getJiraTicket');
 
   const jiraIdPattern = new RegExp(config.jiraTicketPattern, 'i');
   const matched = jiraIdPattern.exec(branchName);
   const jiraTicket = matched && matched[0];
 
-  if (!jiraTicket) {
-    throw new Error('The JIRA ticket ID not found');
-  }
-
-  return jiraTicket.toUpperCase();
+  return jiraTicket ? jiraTicket.toUpperCase() : null;
 }
 
 export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {

@@ -1,3 +1,14 @@
+### 1.7.0
+
+- [feature] Conventional commit regular expression was simplified to support multiple scopes
+- [feature] New config: allowReplaceAllOccurrences. This option allows to replace all occurrences of variables.
+- [feature] New config: ignoredBranchesPattern. This option allows to ignore branches without JIRA ticket like main or develop.
+- [feature] New config: ignoreBranchesMissingTickets. This option allows to ignore any branches without JIRA ticket.
+- [fix] gitRoot option has priority for searching .git folder if it is specified
+- [minor] Adds new tests
+- [minor] Bumps versions
+- [minor] Updates README
+
 ### 1.6.2
 
 - [feature] New config: gitRoot. It might be either absolute path or relative path which will be resolved from `cwd`
@@ -42,7 +53,7 @@
 ### 1.4.2
 
 - [fix] Supports empty and default commit message
-- [minor] Updates tests logs
+- [minor] Updates test logs
 - [minor] Bumps versions
 - [minor] Fixes README
 

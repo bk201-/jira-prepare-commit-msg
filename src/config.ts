@@ -2,21 +2,27 @@ import { cosmiconfig } from 'cosmiconfig';
 import { debug, error } from './log';
 
 export type JPCMConfig = {
-  messagePattern: string; // Where $J is a ticket number, $M is the message
-  jiraTicketPattern: string; // JIRA ticket RexExp
-  commentChar: string; // Default comment char in the message
-  isConventionalCommit: boolean; // Support https://www.conventionalcommits.org
   allowEmptyCommitMessage: boolean;
+  allowReplaceAllOccurrences: boolean;
+  commentChar: string; // Default comment char in the message
   gitRoot: string;
+  isConventionalCommit: boolean; // Support https://www.conventionalcommits.org
+  ignoredBranchesPattern: string;
+  ignoreBranchesMissingTickets: boolean;
+  jiraTicketPattern: string; // JIRA ticket RexExp
+  messagePattern: string; // Where $J is a ticket number, $M is the message
 };
 
 const defaultConfig = {
-  messagePattern: '[$J] $M',
-  jiraTicketPattern: '([A-Z]+-\\d+)',
-  commentChar: '#',
-  isConventionalCommit: false,
   allowEmptyCommitMessage: false,
+  allowReplaceAllOccurrences: true,
+  commentChar: '#',
   gitRoot: '',
+  ignoredBranchesPattern: '^(master|main|dev|develop|development|release)$',
+  ignoreBranchesMissingTickets: false,
+  isConventionalCommit: false,
+  jiraTicketPattern: '([A-Z]+-\\d+)',
+  messagePattern: '[$J] $M',
 } as JPCMConfig;
 
 function resolveConfig(configPath: string): string {
