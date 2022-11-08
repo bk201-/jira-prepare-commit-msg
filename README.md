@@ -60,12 +60,15 @@ See [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for more details
 ```json
 {
   "jira-prepare-commit-msg": {
-    "messagePattern": "[$J]\n$M",
+    "messagePattern": "[$J] $M",
     "jiraTicketPattern": "([A-Z]+-\\d+)",
     "commentChar": "#",
     "isConventionalCommit": false,
     "allowEmptyCommitMessage": false,
-    "gitRoot": ""
+    "gitRoot": "",
+    "allowReplaceAllOccurrences": true,
+    "ignoredBranchesPattern": "^(master|main|dev|develop|development|release)$",
+    "ignoreBranchesMissingTickets": false
   }
 }
 ```
@@ -93,6 +96,26 @@ Pattern `[$J]\n$M` is currently supported by default.
 * `$J $M`
 
 **NOTE:** the supplied commit message will be cleaned up by `strip` mode.
+
+#### Replacing all occurrences
+
+`jira-prepare-commit-msg` supports by default replacing all occurrences variables in message pattern.
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "allowReplaceAllOccurrences": true
+  }
+}
+```
+
+##### Examples
+
+If set the message pattern to `[$J] $M. \n Line for CI ($J): $M`, then all occurrences will be replaced: 
+```
+[JIRA-1234] test message.
+Line for CI (JIRA-1234): test message
+```
 
 #### Supported JIRA ticket pattern
 
@@ -151,6 +174,44 @@ The package will search commit message so:
 const pathToGit = path.resolve(cwd, './../../');
 const pathToCommitMessage = path.join(pathToGit, '.git', 'COMMIT_EDITMSG');
 ```
+
+#### Ignoring branches
+
+Branches can be ignored and skipped by regex pattern string
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "ignoredBranchesPattern": "^main|develop|(maint-.*)$"
+  }
+}
+```
+
+Moreover, this can be solved by replacing the Husky hook. Put in your prepare-commit-msg file (husky git hook):
+
+```shell
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+if [[ "$(git rev-parse --abbrev-ref HEAD)" =~ YOUR_BRANCH_REGEX ]]; then
+npx --no-install jira-prepare-commit-msg $1
+fi
+```
+
+where `YOUR_BRANCH_REGEX` e.g. `^(feature|(bug|hot)fix)\/[A-Z]+-[0-9]+$`
+
+#### Silently ignore any branch that does not have a jira ticket in it
+
+Be silent and skip any branch with missing jira ticket
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "ignoreBranchesMissingTickets": true
+  }
+}
+```
+
 
 #### Conventional commit
 
