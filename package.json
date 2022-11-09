@@ -1,6 +1,6 @@
 {
   "name": "jira-prepare-commit-msg",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Husky Git hook to add JIRA ticket ID into the commit message",
   "author": "Dmitry Shilov",
   "bin": "./bin/index.js",
