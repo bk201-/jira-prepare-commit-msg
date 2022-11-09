@@ -64,6 +64,7 @@ See [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for more details
     "jiraTicketPattern": "([A-Z]+-\\d+)",
     "commentChar": "#",
     "isConventionalCommit": false,
+    "conventionalCommitPattern": "^([a-z]+)(\\([a-z0-9.,-_ ]+\\))?!?: ([\\w \\S]+)$",
     "allowEmptyCommitMessage": false,
     "gitRoot": "",
     "allowReplaceAllOccurrences": true,
@@ -267,7 +268,7 @@ With this setting you can change how `jira-prepare-commit-msg` reads your custom
 
 You can allow the scope to have capital letters adding A-Z to the regular expression above. If the configuration is:
 
-```json
+```json5
 {
   "jira-prepare-commit-msg": {
     "messagePattern": "[$J] $M",

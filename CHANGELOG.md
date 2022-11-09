@@ -1,3 +1,6 @@
+### 1.7.1
+- [feature] New config: conventionalCommitPattern. This option allows to replace default conventional commit pattern.
+
 ### 1.7.0
 
 - [feature] Conventional commit regular expression was simplified to support multiple scopes

@@ -116,6 +116,15 @@ const conventionalCommitIncludesMultipleScope = {
   },
 };
 
+const conventionalCommitPattern = {
+  initialMessage: ['feat(Scope1!, Scope2?): Finally solved that problem!'],
+  expectedMessage: 'feat(Scope1!, Scope2?): [JIRA-4321]. Finally solved that problem!',
+  config: {
+    isConventionalCommit: true,
+    conventionalCommitPattern: "^([a-z]+)(\\([a-zA-Z0-9.,-_ !?]+\\))?!?: ([\\w \\S]+)$"
+  },
+};
+
 function exec(cmd: string, cwd: string, t: ExecutionContext): Promise<string> {
   return new Promise((resolve, reject) => {
     console.log(`${t.title}. Exec ${cmd}`);
@@ -188,6 +197,7 @@ test('husky2 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(ignoredBranchesPatternIsSet, 'husky2', t);
   await testCommitMessage(ignoredBranchesPatternIsSet2, 'husky2', t);
   await testCommitMessage(conventionalCommitIncludesMultipleScope, 'husky2', t);
+  await testCommitMessage(conventionalCommitPattern, 'husky2', t);
 });
 
 test('husky3 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
@@ -201,6 +211,7 @@ test('husky3 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(ignoredBranchesPatternIsSet, 'husky3', t);
   await testCommitMessage(ignoredBranchesPatternIsSet2, 'husky3', t);
   await testCommitMessage(conventionalCommitIncludesMultipleScope, 'husky3', t);
+  await testCommitMessage(conventionalCommitPattern, 'husky3', t);
 });
 
 test('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
@@ -214,6 +225,7 @@ test('husky4 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(ignoredBranchesPatternIsSet, 'husky4', t);
   await testCommitMessage(ignoredBranchesPatternIsSet2, 'husky4', t);
   await testCommitMessage(conventionalCommitIncludesMultipleScope, 'husky4', t);
+  await testCommitMessage(conventionalCommitPattern, 'husky4', t);
 });
 
 test('husky5 JIRA ticket ID should be in commit message', async (t: ExecutionContext) => {
@@ -227,4 +239,5 @@ test('husky5 JIRA ticket ID should be in commit message', async (t: ExecutionCon
   await testCommitMessage(ignoredBranchesPatternIsSet, 'husky5', t);
   await testCommitMessage(ignoredBranchesPatternIsSet2, 'husky5', t);
   await testCommitMessage(conventionalCommitIncludesMultipleScope, 'husky5', t);
+  await testCommitMessage(conventionalCommitPattern, 'husky5', t);
 });
