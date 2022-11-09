@@ -243,6 +243,46 @@ If the configuration is:
 
 and commit message is `fix(test)!: important changes` then at result will be `fix(test)!: [JIRA-1234] important changes`
 
+Additionally, you can **customize the conventional commit format** with the following setting:
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "conventionalCommitPattern": "^([a-z]+)(\\([a-z0-9.,-_ ]+\\))?!?: ([\\w \\S]+)$"
+  }
+}
+```
+
+The above regular expression is the default conventional commit pattern so, if you don't provide this property, `jira-prepare-commit-msg` will use this by default.
+
+In the default regular expression, from left to right:
+
+- `([a-z]+)` is the commit `type`.
+- `(\\([a-z0-9.,-_ ]+\\))?!?` is the commit `scope`.
+- And `([\\w \\S]+)` is the commit `subject`.
+
+With this setting you can change how `jira-prepare-commit-msg` reads your custom conventional commit message and rewrite it adding the Jira ticket id.
+
+##### Examples
+
+You can allow the scope to have capital letters adding A-Z to the regular expression above. If the configuration is:
+
+```json
+{
+  "jira-prepare-commit-msg": {
+    "messagePattern": "[$J] $M",
+    "isConventionalCommit": true,
+    "conventionalCommitPattern": "^([a-z]+)(\\([a-zA-Z0-9.,-_ ]+\\))?!?: ([\\w \\S]+)$"
+    //                                             ^^^
+    //                 Now we can use capital letters in the conventional commit scope
+  }
+}
+```
+
+and commit message is "`test(E2E): some end-to-end testing stuff`" then at result will be "`test(E2E): [JIRA-1234] some end-to-end testing stuff`"
+
+Be aware that if you leave the default `conventionalCommitPattern` value (that it not allows capital letters in the commit scope), and the same values for `messagePattern` and `isConventionalCommit` in the example above, your resulting message will be "`[JIRA-1234] test(E2E): some end-to-end testing stuff`". Maybe, this is not the result you are expecting and you can have problems using other tools like [commitlint](https://commitlint.js.org/).
+
 ## TODO
 
 - [x] Support user patterns
