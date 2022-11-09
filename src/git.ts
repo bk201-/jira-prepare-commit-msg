@@ -12,7 +12,6 @@ interface MessageInfo {
   hasVerboseText: boolean;
 }
 
-const conventionalCommitRegExp = /^([a-z]+)(\([a-z0-9.,-_ ]+\))?!?: ([\w \S]+)$/g;
 const gitVerboseStatusSeparator = '------------------------ >8 ------------------------';
 
 function getMsgFilePath(gitRoot: string, index = 0): string {
@@ -161,6 +160,7 @@ function insertJiraTicketIntoMessage(messageInfo: MessageInfo, jiraTicket: strin
 
       if (config.isConventionalCommit) {
         debug(`Finding conventional commit in: ${line}`);
+        const conventionalCommitRegExp = new RegExp(config.conventionalCommitPattern, 'g');
         conventionalCommitRegExp.lastIndex = -1;
         const [match, type, scope, msg] = conventionalCommitRegExp.exec(line) ?? [];
         if (match) {
