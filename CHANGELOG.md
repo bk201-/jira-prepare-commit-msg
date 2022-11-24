@@ -1,3 +1,6 @@
+### 1.8.0
+- [feature] Supporting flags. Using flags instead of config file or specifying the path to the config file.
+
 ### 1.7.1
 - [feature] New config: conventionalCommitPattern. This option allows to replace default conventional commit pattern.
 

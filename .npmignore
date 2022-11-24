@@ -1,5 +1,7 @@
 .idea
 .vscode
+bin
+!bin/index.js
 src
 test
 .gitattributes
@@ -12,5 +14,6 @@ test
 .npmignore
 .prettierrc.json
 .travis.yml
-rollup.config.js
+rollup.config.*
 tsconfig.json
+tsconfig-spec.json

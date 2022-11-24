@@ -1,7 +1,7 @@
-const verbose = process.argv.find((arg) => arg === '--verbose');
+import { options } from './arguments';
 
 export function debug(message: string): void {
-  if (!verbose) {
+  if (!options.verbose) {
     return;
   }
 

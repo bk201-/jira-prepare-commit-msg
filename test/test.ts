@@ -2,7 +2,7 @@ import test, { ExecutionContext } from 'ava';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as childProcess from 'child_process';
-import { JPCMConfig } from '../src/config';
+import { JPCMConfig } from '../src/config.js';
 
 interface CommitMessageToTest {
   initialMessage: string[];

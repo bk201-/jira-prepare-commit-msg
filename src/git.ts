@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
 import { JPCMConfig } from './config';
+import { CWD } from './constants';
 import { debug, log } from './log';
 
 interface MessageInfo {
@@ -20,11 +21,9 @@ function getMsgFilePath(gitRoot: string, index = 0): string {
   if (gitRoot.length > 0) {
     // At first looking into this path, then if it's empty trying other ways
     if (!path.isAbsolute(gitRoot)) {
-      const cwd = process.cwd();
+      log(`Resolving .git path from ${CWD}`);
 
-      log(`Resolving .git path from ${cwd}`);
-
-      gitRoot = path.resolve(cwd, gitRoot);
+      gitRoot = path.resolve(CWD, gitRoot);
     }
 
     if (!gitRoot.includes('.git')) {
@@ -205,7 +204,7 @@ export type GitRevParseResult = {
   gitCommonDir: string;
 };
 
-export function gitRevParse(cwd = process.cwd(), gitRoot = ''): GitRevParseResult {
+export function gitRevParse(cwd = CWD, gitRoot = ''): GitRevParseResult {
   const args = [];
 
   // If git root is specified, checking existing work tree
@@ -238,9 +237,7 @@ export function gitRevParse(cwd = process.cwd(), gitRoot = ''): GitRevParseResul
 export function getRoot(gitRoot: string): string {
   debug('getRoot');
 
-  const cwd = process.cwd();
-
-  const { gitCommonDir } = gitRevParse(cwd, gitRoot);
+  const { gitCommonDir } = gitRevParse(CWD, gitRoot);
 
   // Git rev-parse returns unknown options as is.
   // If we get --absolute-git-dir in the output,
@@ -251,13 +248,12 @@ export function getRoot(gitRoot: string): string {
     throw new Error('Husky requires Git >= 2.13.0, please upgrade Git');
   }
 
-  return path.resolve(cwd, gitCommonDir);
+  return path.resolve(CWD, gitCommonDir);
 }
 
-export function getBranchName(gitRoot: string): string {
+export function getBranchName(gitRoot: string, config: JPCMConfig): string {
   debug('gitBranchName');
 
-  const cwd = process.cwd();
   const args = [];
 
   // If git root is specified, checking existing work tree
@@ -267,23 +263,41 @@ export function getBranchName(gitRoot: string): string {
 
   args.push('symbolic-ref', '--short', 'HEAD');
 
-  const { status, stderr, stdout } = cp.spawnSync('git', args, { cwd, encoding: 'utf-8' });
+  const { status, stderr, stdout } = cp.spawnSync('git', args, { cwd: CWD, encoding: 'utf-8' });
 
   if (status !== 0) {
     throw new Error(stderr.toString());
   }
 
-  return stdout.toString().trim();
+  const branchName = stdout.toString().trim();
+
+  log(`Git branch name is ${branchName}`);
+
+  if (isBranchIgnored(branchName, config)) {
+    throw new Error('The branch is ignored by the configuration rule');
+  }
+
+  return branchName;
 }
 
-export function getJiraTicket(branchName: string, config: JPCMConfig): string | null {
+export function getJiraTicket(branchName: string, config: JPCMConfig): string {
   debug('getJiraTicket');
 
   const jiraIdPattern = new RegExp(config.jiraTicketPattern, 'i');
   const matched = jiraIdPattern.exec(branchName);
-  const jiraTicket = matched && matched[0];
+  const jiraTicket = matched && matched[0] ? matched[0].toUpperCase() : null;
 
-  return jiraTicket ? jiraTicket.toUpperCase() : null;
+  if (jiraTicket === null) {
+    if (config.ignoreBranchesMissingTickets) {
+      throw new Error('The branch does not contain a JIRA ticket and is ignored by the configuration rule');
+    } else {
+      throw new Error('The JIRA ticket ID not found');
+    }
+  }
+
+  log(`The JIRA ticket ID is: ${jiraTicket}`);
+
+  return jiraTicket;
 }
 
 export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
@@ -310,4 +324,10 @@ export function writeJiraTicket(jiraTicket: string, config: JPCMConfig): void {
   } catch (ex) {
     throw new Error(`Unable to write the file "${messageFilePath}".`);
   }
+}
+
+export function isBranchIgnored(branchName: string, config: JPCMConfig): boolean {
+  const ignored = new RegExp(config.ignoredBranchesPattern || '^$', 'i');
+
+  return ignored.test(branchName);
 }

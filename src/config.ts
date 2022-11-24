@@ -1,5 +1,8 @@
-import { cosmiconfig } from 'cosmiconfig';
+import { cosmiconfigSync } from 'cosmiconfig';
+
 import { debug, error } from './log';
+import { options, Options } from './arguments';
+import { APP_NAME } from './constants';
 
 export type JPCMConfig = {
   allowEmptyCommitMessage: boolean;
@@ -14,7 +17,7 @@ export type JPCMConfig = {
   messagePattern: string; // Where $J is a ticket number, $M is the message
 };
 
-const defaultConfig = {
+const defaultConfig: JPCMConfig = {
   allowEmptyCommitMessage: false,
   allowReplaceAllOccurrences: true,
   commentChar: '#',
@@ -25,7 +28,33 @@ const defaultConfig = {
   conventionalCommitPattern: '^([a-z]+)(\\([a-z0-9.,-_ ]+\\))?!?: ([\\w \\S]+)$',
   jiraTicketPattern: '([A-Z]+-\\d+)',
   messagePattern: '[$J] $M',
-} as JPCMConfig;
+};
+
+function getSearchPlaces(): string[] {
+  const moduleNameWithoutHyphen = APP_NAME.replace(/-/g, '');
+  return [
+    'package.json',
+    `.${APP_NAME}rc`,
+    `.${APP_NAME}rc.json`,
+    `.${APP_NAME}rc.yaml`,
+    `.${APP_NAME}rc.yml`,
+    `.${APP_NAME}rc.js`,
+    `.${APP_NAME}rc.cjs`,
+    `.config/${APP_NAME}rc`,
+    `.config/${APP_NAME}rc.json`,
+    `.config/${APP_NAME}rc.yaml`,
+    `.config/${APP_NAME}rc.yml`,
+    `.config/${APP_NAME}rc.js`,
+    `.config/${APP_NAME}rc.cjs`,
+    `${APP_NAME}.config.js`,
+    `${APP_NAME}.config.cjs`,
+    // Supporting old config files
+    `.${moduleNameWithoutHyphen}rc`,
+    `.${moduleNameWithoutHyphen}rc.json`,
+    `.${moduleNameWithoutHyphen}rc.yaml`,
+    `.${moduleNameWithoutHyphen}rc.yml`,
+  ];
+}
 
 function resolveConfig(configPath: string): string {
   try {
@@ -35,35 +64,57 @@ function resolveConfig(configPath: string): string {
   }
 }
 
-export async function loadConfig(configPath?: string): Promise<JPCMConfig> {
+function loadConfig(configPath?: string): Partial<JPCMConfig> {
   try {
-    const explorer = cosmiconfig('jira-prepare-commit-msg', {
-      searchPlaces: [
-        'package.json',
-        '.jirapreparecommitmsgrc',
-        '.jirapreparecommitmsgrc.json',
-        '.jirapreparecommitmsgrc.yaml',
-        '.jirapreparecommitmsgrc.yml',
-        'jira-prepare-commit-msg.config.js',
-      ],
+    const explorer = cosmiconfigSync('jira-prepare-commit-msg', {
+      searchPlaces: getSearchPlaces(),
     });
 
-    const config = configPath ? await explorer.load(resolveConfig(configPath)) : await explorer.search();
+    const config = configPath ? explorer.load(resolveConfig(configPath)) : explorer.search();
 
-    debug(`Loaded config: ${JSON.stringify(config)}`);
+    debug(`Config loaded from file: ${JSON.stringify(config)}`);
 
     if (config && !config.isEmpty) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const result = { ...defaultConfig, ...config.config };
-      debug(`Used config: ${JSON.stringify(result)}`);
-      return result as JPCMConfig;
+      return config.config as Partial<JPCMConfig>;
     }
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     error(`Loading configuration failed with error: ${err}`);
   }
 
-  const result = { ...defaultConfig };
+  return {} as Partial<JPCMConfig>;
+}
+
+function mappingOptionsToConfig(args: Options): Partial<JPCMConfig> {
+  const config: Partial<JPCMConfig> = {};
+
+  Object.entries(args).forEach(([key, value]) => {
+    if (key === 'config' || key === 'verbose') return;
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    config[key] = value;
+  });
+
+  debug(`Config loaded from CLI: ${JSON.stringify(config)}`);
+
+  return config;
+}
+
+export function retrieveConfig(): JPCMConfig {
+  let configFromFile: Partial<JPCMConfig> = {};
+  let configFromCli: Partial<JPCMConfig> = {};
+
+  if (options.config) {
+    configFromFile = loadConfig(options.config);
+  } else {
+    configFromFile = loadConfig();
+    configFromCli = mappingOptionsToConfig(options);
+  }
+
+  const result = { ...defaultConfig, ...configFromFile, ...configFromCli };
+
   debug(`Used config: ${JSON.stringify(result)}`);
+
   return result;
 }
