@@ -22,7 +22,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "cosmiconfig": "^7.0.1"
+    "cosmiconfig": "^8.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
