@@ -166,7 +166,10 @@ function insertJiraTicketIntoMessage(messageInfo: MessageInfo, jiraTicket: strin
         if (match) {
           debug(`Conventional commit message: ${match}`);
 
-          if (!msg.includes(jiraTicket)) {
+          if (config.useConventionalCommitScope && !scope?.includes(jiraTicket)) {
+            const cleanScopeUnitSet = scope ? [scope.replace(/^\(([^)]+)\)$/, "$1")] : [];
+            lines[firstLineToInsert] = `${type}(${[jiraTicket, ...cleanScopeUnitSet].join(', ')}): ${msg}`;
+          } else if (!msg.includes(jiraTicket)) {
             const replacedMessage = replaceMessageByPattern(
               jiraTicket,
               msg,
