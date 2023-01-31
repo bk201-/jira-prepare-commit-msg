@@ -1,4 +1,5 @@
 const verbose = process.argv.find((arg) => arg === '--verbose');
+const quietLog = process.argv.find((arg) => arg === '--quiet');
 
 export function debug(message: string): void {
   if (!verbose) {
@@ -9,6 +10,10 @@ export function debug(message: string): void {
 }
 
 export function log(message: string): void {
+  if (!quietLog) {
+    return;
+  }
+
   console.log(`JIRA prepare commit msg > ${message}`);
 }
 
