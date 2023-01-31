@@ -10,7 +10,7 @@ export function debug(message: string): void {
 }
 
 export function log(message: string): void {
-  if (!quietLog) {
+  if (quietLog) {
     return;
   }
 
