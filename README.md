@@ -30,6 +30,10 @@ Execute command
 ```shell
 npx husky add .husky/prepare-commit-msg 'npx jira-prepare-commit-msg $1'
 ```
+To quiet the output of the command, you can use the `--quiet` flag.
+```shell
+npx husky add .husky/prepare-commit-msg 'npx jira-prepare-commit-msg --quiet $1'
+```
 
 For Husky 2-4:
 
