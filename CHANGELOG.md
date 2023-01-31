@@ -1,3 +1,7 @@
+### 1.7.2
+- [feature] New CLI option --quite to quiet the output of the command.
+- [fix] Fixes `clean` command 
+
 ### 1.7.1
 - [feature] New config: conventionalCommitPattern. This option allows to replace default conventional commit pattern.
 

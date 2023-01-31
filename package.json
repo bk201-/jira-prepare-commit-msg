@@ -55,7 +55,7 @@
     ]
   },
   "scripts": {
-    "clean": "rimraf -- ./bin/*",
+    "clean": "rimraf -- ./bin/",
     "compile": "npm run clean && npm run tsc",
     "eslint": "eslint --ext .js --ext .ts src/",
     "eslint:fix": "eslint --ext .js --ext .ts src/ --fix",
