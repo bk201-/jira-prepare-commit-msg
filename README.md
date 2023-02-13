@@ -2,14 +2,13 @@
 [![Downloads](https://img.shields.io/npm/dm/jira-prepare-commit-msg)](https://www.npmjs.com/package/jira-prepare-commit-msg)
 [![MIT license](https://img.shields.io/npm/l/jira-prepare-commit-msg)](http://opensource.org/licenses/MIT)
 
-The husky command to add JIRA ticket ID into the commit message if it is missed.
+The husky command to add JIRA ticket ID into the commit message if it is missing.
 
-The JIRA ticket ID is taken from a git branch name.
+The JIRA ticket ID is taken from the current git branch name.
 
 ## Why?
 
-Installing Jira prepare commit msg hook into your project will mean everyone contributing code to your project will automatically tag each commit with
-it's associated issue key based off the branch name. 
+Installing Jira prepare commit msg hook into your project will mean everyone contributing code to your project will automatically tag each commit with its associated issue key based on the branch name. 
 
 So if your branch name is `feature/TEST-123-new-feature`, then when you commit with a message `"initial commit"` it will automatically become `"TEST-123: initial commit"`.
 
@@ -81,10 +80,10 @@ See [cosmiconfig](https://github.com/davidtheclark/cosmiconfig) for more details
 #### Supported message pattern
 
 `jira-prepare-commit-msg` supports special message pattern to configure where JIRA ticket number will be inserted. 
-* Symbols `$J` will be replaced on JIRA ticket number
-* Symbols `$M` will be replaced on commit message.
+* Symbols `$J` will be replaced by the JIRA ticket number
+* Symbols `$M` will be replaced by the commit message.
  
-Pattern `[$J]\n$M` is currently supported by default. 
+Pattern `[$J]\n$M` is currently enabled by default. 
 
 ```json
 {
