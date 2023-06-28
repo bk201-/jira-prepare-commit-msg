@@ -22,7 +22,7 @@ Install the package using NPM
 npm install husky jira-prepare-commit-msg --save-dev && npx husky install
 ```
 
-For Husky 5:
+For Husky 5+:
 
 Execute command
 
