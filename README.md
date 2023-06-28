@@ -22,7 +22,7 @@ Install the package using NPM
 npm install husky jira-prepare-commit-msg --save-dev && npx husky install
 ```
 
-For Husky 5:
+### For Husky 5+
 
 Execute command
 
@@ -34,7 +34,7 @@ To quiet the output of the command, you can use the `--quiet` flag.
 npx husky add .husky/prepare-commit-msg 'npx jira-prepare-commit-msg --quiet $1'
 ```
 
-For Husky 2-4:
+### For Husky 2-4
 
 Inside your package.json add a standard husky npm script for the git hook
 
